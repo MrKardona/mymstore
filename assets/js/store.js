@@ -5,7 +5,7 @@
 // ⚙️ CONFIGURACIÓN — cambia aquí el número de WhatsApp de la tienda
 // Formato internacional sin "+" ni espacios. Ej Colombia: 573001234567
 const STORE = {
-  whatsapp: "573000000000", // ← REEMPLAZAR con el número real de M&M Store
+  whatsapp: "573013058412", // WhatsApp oficial M&M Store
   name: "M&M Store",
 };
 
