@@ -460,6 +460,16 @@ footer {
 @media (max-width: 760px) { .footer__grid { grid-template-columns: 1fr; } }
 .footer__logo { height: 54px; width: auto; margin-bottom: 14px; }
 .footer__grid p { color: var(--cream-dim); font-size: 0.88rem; line-height: 1.7; max-width: 340px; }
+.footer__social { margin-top: 16px; }
+.footer__social a {
+  display: inline-flex; align-items: center; gap: 10px;
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 9px 18px 9px 12px;
+  color: var(--cream); font-size: 0.85rem; font-weight: 700;
+  transition: border-color 0.2s, color 0.2s, transform 0.2s;
+}
+.footer__social a:hover { border-color: var(--orange); color: var(--orange); transform: translateY(-2px); }
+.footer__social svg { flex: none; }
 .footer__grid h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--blue-soft); margin-bottom: 14px; }
 .footer__grid ul { list-style: none; display: grid; gap: 10px; }
 .footer__grid ul a { color: var(--cream-dim); font-size: 0.9rem; transition: color 0.2s; }

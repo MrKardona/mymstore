@@ -79,7 +79,7 @@ function productPage(p) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;800;900&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/css/style.css?v=6">
+  <link rel="stylesheet" href="../assets/css/style.css?v=7">
   <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
   <script type="application/ld+json">${JSON.stringify(crumbs)}</script>
 </head>
@@ -119,6 +119,7 @@ function productPage(p) {
           <div><dt>Marca</dt><dd>${esc(p.brand)}</dd></div>
           <div><dt>Condición</dt><dd>Nuevo · 100% original</dd></div>
           <div><dt>Entrega Medellín</dt><dd>Inmediata (mismo día)</dd></div>
+          <div><dt>Pago en Medellín</dt><dd>Contra entrega disponible</dd></div>
           <div><dt>Envío nacional</dt><dd>1–3 días hábiles</dd></div>
         </dl>
         <div class="pdp__ship">
