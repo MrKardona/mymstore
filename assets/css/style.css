@@ -407,7 +407,10 @@ main, header, footer, section { position: relative; z-index: 1; }
 
 /* ---------- Sobre nosotros ---------- */
 .about { display: grid; grid-template-columns: 1fr 1.2fr; gap: clamp(28px, 5vw, 64px); align-items: center; }
-@media (max-width: 860px) { .about { grid-template-columns: 1fr; } }
+@media (max-width: 860px) {
+  .about { grid-template-columns: 1fr; }
+  .about__photo { max-width: min(300px, 78vw); margin: 0 auto; }
+}
 .about__photo { position: relative; perspective: 900px; }
 .about__photo img {
   border-radius: 20px; border: 1px solid var(--line);
