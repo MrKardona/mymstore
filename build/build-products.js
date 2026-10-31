@@ -79,7 +79,7 @@ function productPage(p) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;800;900&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/css/style.css?v=4">
+  <link rel="stylesheet" href="../assets/css/style.css?v=5">
   <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
   <script type="application/ld+json">${JSON.stringify(crumbs)}</script>
 </head>
@@ -155,8 +155,8 @@ function productPage(p) {
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" defer></script>
-  <script src="../assets/js/products.js?v=4"></script>
-  <script src="../assets/js/store.js?v=4" defer></script>
+  <script src="../assets/js/products.js?v=5"></script>
+  <script src="../assets/js/store.js?v=5" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var rel = PRODUCTS.filter(function (x) { return x.cat === "${p.cat}" && x.id !== "${p.id}"; }).slice(0, 4);
