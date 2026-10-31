@@ -116,6 +116,7 @@ main, header, footer, section { position: relative; z-index: 1; }
     linear-gradient(var(--line) 1px, transparent 1px),
     linear-gradient(90deg, var(--line) 1px, transparent 1px);
   background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 30%, transparent 75%);
   mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 30%, transparent 75%);
 }
 .hero__inner { text-align: left; width: 100%; max-width: 1380px; position: relative; padding-left: clamp(4px, 2vw, 40px); }
@@ -546,6 +547,17 @@ footer {
 .pdp__tick { color: var(--orange); font-weight: 900; }
 .pdp__related { margin-top: 70px; }
 .pdp__related h2 { font-family: var(--font-display); text-transform: uppercase; font-size: 1.6rem; margin-bottom: 22px; }
+
+/* ---------- Skip link (accesibilidad teclado) ---------- */
+.skip-link {
+  position: fixed; top: -70px; left: 16px; z-index: 110;
+  background: var(--ink); color: var(--cream);
+  border: 2px solid var(--orange);
+  font-weight: 900; font-size: 0.85rem;
+  padding: 12px 20px; border-radius: 0 0 12px 12px;
+  transition: top 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.skip-link:focus-visible { top: 0; outline: none; }
 
 /* ---------- Barra de progreso de scroll ---------- */
 .scroll-progress {

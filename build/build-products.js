@@ -102,7 +102,7 @@ function productPage(p) {
     <p class="pdp__crumbs"><a href="../index.html">Inicio</a> / <a href="../index.html#catalogo">Catálogo</a> / ${esc(p.name)}</p>
     <div class="pdp__grid">
       <figure class="pdp__media">
-        <img src="../assets/img/products/${p.img}" alt="${esc(p.name)} — ${esc(p.brand)} original, talla ${esc(p.sizes)}, disponible en M&M Store Medellín" width="900" height="900">
+        <img src="../assets/img/products/${p.img}" alt="${esc(p.name)} — ${esc(p.brand)} original, talla ${esc(p.sizes)}, disponible en M&M Store Medellín" decoding="async" width="900" height="900">
       </figure>
       <div>
         <p class="pdp__brand">${esc(p.brand)} · ${CAT_LABEL[p.cat] || "Sneakers"}</p>
@@ -152,7 +152,7 @@ function productPage(p) {
       <p class="drawer__note">Te confirmamos disponibilidad, pago y entrega al instante.</p>
     </div>
   </aside>
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" defer></script>
   <script src="../assets/js/products.js"></script>

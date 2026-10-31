@@ -63,6 +63,7 @@ function renderCart() {
     countEl.textContent = count;
     countEl.classList.toggle("hide", count === 0);
   }
+  document.getElementById("cartFab")?.setAttribute("aria-label", count ? `Abrir carrito, ${count} par(es)` : "Abrir carrito, vacío");
   const box = document.getElementById("cartItems");
   if (!box) return;
   if (!cart.length) {
@@ -104,8 +105,22 @@ function checkout() {
 /* ---------- Drawer ---------- */
 const drawer = document.getElementById("cartDrawer");
 const backdrop = document.getElementById("drawerBackdrop");
-function openDrawer() { drawer?.classList.add("open"); backdrop?.classList.add("open"); }
-function closeDrawer() { drawer?.classList.remove("open"); backdrop?.classList.remove("open"); }
+let lastFocus = null;
+function openDrawer() {
+  if (!drawer) return;
+  lastFocus = document.activeElement;
+  drawer.classList.add("open");
+  backdrop?.classList.add("open");
+  document.getElementById("drawerClose")?.focus({ preventScroll: true });
+}
+function closeDrawer() {
+  drawer?.classList.remove("open");
+  backdrop?.classList.remove("open");
+  if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+}
+addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && drawer?.classList.contains("open")) closeDrawer();
+});
 document.getElementById("cartFab")?.addEventListener("click", openDrawer);
 document.getElementById("drawerClose")?.addEventListener("click", closeDrawer);
 backdrop?.addEventListener("click", closeDrawer);
@@ -139,7 +154,7 @@ function cardHTML(p) {
   return `
   <article class="card reveal" data-cat="${p.cat}">
     <a class="card__media" href="${BASE}producto/${p.id}.html" aria-label="Ver ${p.name}">
-      <img src="${BASE}assets/img/products/${p.img}" alt="${p.name} — ${p.brand} original en M&M Store Medellín" loading="lazy" width="900" height="900">
+      <img src="${BASE}assets/img/products/${p.img}" alt="${p.name} — ${p.brand} original en M&M Store Medellín" loading="lazy" decoding="async" width="900" height="900">
       ${tag}
     </a>
     <div class="card__body">
@@ -195,7 +210,7 @@ if (dropsGrid && typeof PRODUCTS !== "undefined") {
     if (!p) return "";
     return `
     <article class="drop reveal" style="--i:${i}">
-      <img src="assets/img/products/${p.img}" alt="${p.name} — colaboración exclusiva disponible en M&M Store" loading="lazy">
+      <img src="assets/img/products/${p.img}" alt="${p.name} — colaboración exclusiva disponible en M&M Store" loading="lazy" decoding="async">
       <span class="drop__badge">${p.qty === 1 ? "Última unidad" : p.tag || "Drop"}</span>
       <div class="drop__body">
         <h3>${p.name}</h3>
