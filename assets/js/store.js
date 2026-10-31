@@ -147,7 +147,7 @@ function cardHTML(p) {
       <a href="${BASE}producto/${p.id}.html"><h3 class="card__name">${p.name}</h3></a>
       <span class="card__sizes">Talla: ${p.sizes}</span>
       <div class="card__footer">
-        <div class="card__price">${fmtCOP(p.price)}<small>Entrega inmediata Medellín</small></div>
+        <div class="card__price">${fmtCOP(p.price)}</div>
         <button class="card__add" aria-label="Agregar ${p.name} al carrito" onclick="addToCart('${p.id}')">+</button>
       </div>
     </div>
@@ -243,9 +243,16 @@ if (parallaxEls.length && !matchMedia("(prefers-reduced-motion: reduce)").matche
   }, { passive: true });
 }
 
-/* ---------- Nav scrolled ---------- */
+/* ---------- Nav scrolled + barra de progreso ---------- */
 const nav = document.getElementById("nav");
-addEventListener("scroll", () => nav?.classList.toggle("scrolled", scrollY > 30), { passive: true });
+const progressBar = document.getElementById("scrollProgress");
+addEventListener("scroll", () => {
+  nav?.classList.toggle("scrolled", scrollY > 30);
+  if (progressBar) {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    progressBar.style.transform = `scaleX(${max > 0 ? scrollY / max : 0})`;
+  }
+}, { passive: true });
 
 /* ---------- Smooth scroll (Lenis) ---------- */
 if (window.Lenis && !matchMedia("(prefers-reduced-motion: reduce)").matches) {

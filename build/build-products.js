@@ -63,6 +63,7 @@ function productPage(p) {
   <link rel="canonical" href="${url}">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#0b1420">
+  <meta name="color-scheme" content="dark">
   <meta property="og:type" content="product">
   <meta property="og:site_name" content="M&M Store">
   <meta property="og:title" content="${esc(title)}">
