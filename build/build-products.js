@@ -156,7 +156,7 @@ function productPage(p) {
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" defer></script>
-  <script src="../assets/js/products.js?v=9"></script>
+  <script src="../assets/js/products.js?v=10"></script>
   <script src="../assets/js/store.js?v=9" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
