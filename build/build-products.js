@@ -16,11 +16,21 @@ const PRODUCTS = ctx.PRODUCTS;
 const fmtCOP = (n) => "$" + n.toLocaleString("es-CO");
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 
-const CAT_LABEL = { colabs: "Colaboraciones", yeezy: "Yeezy", lifestyle: "Lifestyle", running: "Running", guayos: "Guayos" };
+const CAT_LABEL = { colabs: "Colaboraciones", yeezy: "Yeezy", lifestyle: "Lifestyle", running: "Running", guayos: "Guayos", nike: "Sneakers" };
+
+// Vistas adicionales disponibles en assets/img/products/gallery/<id>-<n>.webp
+const GALLERY_DIR = path.join(ROOT, "assets/img/products/gallery");
+function galleryViews(id) {
+  if (!fs.existsSync(GALLERY_DIR)) return [];
+  return fs.readdirSync(GALLERY_DIR)
+    .filter((f) => new RegExp(`^${id}-\\d+\\.webp$`).test(f))
+    .sort((a, b) => parseInt(a.match(/-(\d+)\.webp$/)[1], 10) - parseInt(b.match(/-(\d+)\.webp$/)[1], 10));
+}
 
 function productPage(p) {
   const url = `${SITE}/producto/${p.id}.html`;
   const img = `${SITE}/assets/img/products/${p.img}`;
+  const views = galleryViews(p.id);
   const title = `${p.name} — ${fmtCOP(p.price)} | M&M Store Medellín`;
   const desc = `${p.desc} Talla ${p.sizes}. ${fmtCOP(p.price)} COP. 100% original, entrega inmediata en Medellín y envíos a toda Colombia.`;
   const few = p.qty === 1;
@@ -29,7 +39,7 @@ function productPage(p) {
     "@context": "https://schema.org",
     "@type": "Product",
     name: p.name,
-    image: img,
+    image: views.length ? [img, ...views.map((v) => `${SITE}/assets/img/products/gallery/${v}`)] : img,
     description: desc,
     sku: p.id,
     brand: { "@type": "Brand", name: p.brand },
@@ -79,7 +89,7 @@ function productPage(p) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;800;900&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/css/style.css?v=9">
+  <link rel="stylesheet" href="../assets/css/style.css?v=10">
   <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
   <script type="application/ld+json">${JSON.stringify(crumbs)}</script>
 </head>
@@ -101,9 +111,15 @@ function productPage(p) {
   <main class="pdp">
     <p class="pdp__crumbs"><a href="../index.html">Inicio</a> / <a href="../index.html#catalogo">Catálogo</a> / ${esc(p.name)}</p>
     <div class="pdp__grid">
-      <figure class="pdp__media">
-        <img src="../assets/img/products/${p.img}" alt="${esc(p.name)} — ${esc(p.brand)} original, talla ${esc(p.sizes)}, disponible en M&M Store Medellín" decoding="async" width="900" height="900">
-      </figure>
+      <div class="pdp__gallery">
+        <figure class="pdp__media">
+          <img id="pdpMainImg" src="../assets/img/products/${p.img}" alt="${esc(p.name)} — ${esc(p.brand)} original, talla ${esc(p.sizes)}, disponible en M&M Store Medellín" decoding="async" width="900" height="900">
+        </figure>${views.length ? `
+        <div class="pdp__thumbs" id="pdpThumbs" aria-label="Más vistas del producto">
+          <button class="pdp__thumb is-active" type="button" data-src="../assets/img/products/${p.img}" aria-label="Vista 1"><img src="../assets/img/products/${p.img}" alt="" loading="lazy" decoding="async" width="120" height="120"></button>
+${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-src="../assets/img/products/gallery/${v}" aria-label="Vista ${i + 2}"><img src="../assets/img/products/gallery/${v}" alt="" loading="lazy" decoding="async" width="120" height="120"></button>`).join("\n")}
+        </div>` : ""}
+      </div>
       <div>
         <p class="pdp__brand">${esc(p.brand)} · ${CAT_LABEL[p.cat] || "Sneakers"}</p>
         <h1>${esc(p.name)}</h1>
@@ -156,14 +172,26 @@ function productPage(p) {
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" defer></script>
-  <script src="../assets/js/products.js?v=10"></script>
-  <script src="../assets/js/store.js?v=9" defer></script>
+  <script src="../assets/js/products.js?v=11"></script>
+  <script src="../assets/js/gallery.js?v=2"></script>
+  <script src="../assets/js/store.js?v=10" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var rel = PRODUCTS.filter(function (x) { return x.cat === "${p.cat}" && x.id !== "${p.id}"; }).slice(0, 4);
       if (rel.length < 4) rel = rel.concat(PRODUCTS.filter(function (x) { return x.cat !== "${p.cat}"; }).slice(0, 4 - rel.length));
       document.getElementById("relatedGrid").innerHTML = rel.map(cardHTML).join("");
       observeReveals(document.getElementById("relatedGrid"));
+      var thumbs = document.getElementById("pdpThumbs");
+      if (thumbs) thumbs.addEventListener("click", function (e) {
+        var b = e.target.closest(".pdp__thumb");
+        if (!b) return;
+        var main = document.getElementById("pdpMainImg");
+        main.style.opacity = "0";
+        var next = new Image();
+        next.onload = function () { main.src = b.dataset.src; main.style.opacity = "1"; };
+        next.src = b.dataset.src;
+        thumbs.querySelectorAll(".pdp__thumb").forEach(function (t) { t.classList.toggle("is-active", t === b); });
+      });
     });
   </script>
 </body>
