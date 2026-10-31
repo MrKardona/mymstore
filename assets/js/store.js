@@ -286,6 +286,30 @@ if (matchMedia("(pointer: fine)").matches) {
   });
 }
 
+/* ---------- Logo del hero: kickflip al clic ---------- */
+const heroLogo = document.getElementById("heroLogo");
+heroLogo?.addEventListener("click", () => {
+  heroLogo.classList.remove("kick");
+  void heroLogo.offsetWidth; // reinicia la animación
+  heroLogo.classList.add("kick");
+});
+heroLogo?.addEventListener("animationend", (e) => {
+  if (e.animationName === "kickflip") heroLogo.classList.remove("kick");
+});
+
+/* ---------- Foto del fundador: tilt 3D siguiendo el cursor ---------- */
+const aboutPhoto = document.getElementById("aboutPhoto");
+if (aboutPhoto && matchMedia("(pointer: fine)").matches && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  const img = aboutPhoto.querySelector("img");
+  aboutPhoto.addEventListener("mousemove", (e) => {
+    const r = aboutPhoto.getBoundingClientRect();
+    const rx = ((e.clientY - r.top) / r.height - 0.5) * -10;
+    const ry = ((e.clientX - r.left) / r.width - 0.5) * 10;
+    img.style.transform = `rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) scale(1.02)`;
+  });
+  aboutPhoto.addEventListener("mouseleave", () => { img.style.transform = ""; });
+}
+
 /* ---------- Init ---------- */
 const yearEl = document.getElementById("year");
 if (yearEl) yearEl.textContent = new Date().getFullYear();

@@ -167,6 +167,28 @@ main, header, footer, section { position: relative; z-index: 1; }
 .btn--wa { background: #25d366; color: #06281a; }
 .btn--wa:hover { transform: translateY(-3px); box-shadow: 0 16px 40px -10px rgba(37, 211, 102, 0.5); }
 
+/* emblema del logo junto al titular */
+.hero__logo {
+  position: absolute; right: clamp(16px, 7vw, 130px); top: 50%;
+  translate: 0 -50%; z-index: 2;
+  width: clamp(250px, 32vw, 500px); height: auto;
+  cursor: pointer;
+  animation: floaty 8s ease-in-out infinite;
+  filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.5));
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s;
+  will-change: transform;
+}
+.hero__logo:hover {
+  transform: rotate(-7deg) scale(1.06);
+  filter: drop-shadow(0 36px 70px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 44px rgba(54, 169, 225, 0.3));
+}
+.hero__logo.kick { animation: floaty 8s ease-in-out infinite, kickflip 0.9s cubic-bezier(0.34, 1.3, 0.4, 1); }
+@keyframes kickflip { from { transform: rotate(0) scale(1); } 55% { transform: rotate(-310deg) scale(0.92); } to { transform: rotate(-360deg) scale(1); } }
+@media (max-width: 1024px) { .hero__logo { width: clamp(180px, 26vw, 300px); right: 14px; } }
+@media (max-width: 760px) {
+  .hero__logo { position: relative; display: block; inset: auto; translate: none; margin: 18px 0 6px; width: min(240px, 62vw); }
+}
+
 /* zapatillas flotantes del hero */
 .hero__float {
   position: absolute; width: clamp(130px, 18vw, 260px); aspect-ratio: 1;
@@ -358,12 +380,15 @@ main, header, footer, section { position: relative; z-index: 1; }
 /* ---------- Sobre nosotros ---------- */
 .about { display: grid; grid-template-columns: 1fr 1.2fr; gap: clamp(28px, 5vw, 64px); align-items: center; }
 @media (max-width: 860px) { .about { grid-template-columns: 1fr; } }
-.about__photo { position: relative; }
-.about__photo img { border-radius: 20px; border: 1px solid var(--line); box-shadow: var(--shadow-pop); }
-.about__photo::before {
-  content: ""; position: absolute; inset: -12px 12px 12px -12px;
-  border: 1.5px solid var(--orange); border-radius: 24px; z-index: -1;
-  transform: rotate(-1deg);
+.about__photo { position: relative; perspective: 900px; }
+.about__photo img {
+  border-radius: 20px; border: 1px solid var(--line);
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.7);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s;
+  will-change: transform;
+}
+.about__photo:hover img {
+  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.8), 0 0 50px -10px rgba(54, 169, 225, 0.25);
 }
 .about h2 { margin-bottom: 18px; }
 .about p { color: var(--cream-dim); line-height: 1.75; margin-bottom: 14px; }
