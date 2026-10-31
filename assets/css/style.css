@@ -369,6 +369,10 @@ main, header, footer, section { position: relative; z-index: 1; }
   transition: background 0.2s, transform 0.2s;
 }
 .card__add:hover { background: var(--orange); transform: scale(1.08); }
+.card__add:active { transform: scale(0.94); }
+.chip:active { transform: scale(0.96); }
+.fab:active { transform: scale(0.94); }
+.filters__search svg { color: var(--cream-dim); flex: none; }
 .grid__empty { grid-column: 1/-1; text-align: center; color: var(--cream-dim); padding: 60px 0; }
 
 /* ---------- Sobre nosotros ---------- */
