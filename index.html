@@ -94,7 +94,7 @@
 </head>
 <body class="bg-noise">
 
-  <div class="topbar">🚚 ENTREGA <strong>INMEDIATA</strong> EN MEDELLÍN&nbsp;·&nbsp;ENVÍOS A <strong>TODA COLOMBIA</strong>&nbsp;·&nbsp;100% ORIGINALES</div>
+  <div class="topbar">ENTREGA <strong>INMEDIATA</strong> EN MEDELLÍN&nbsp;·&nbsp;ENVÍOS A <strong>TODA COLOMBIA</strong>&nbsp;·&nbsp;100% ORIGINALES</div>
 
   <nav class="nav" id="nav">
     <a href="#inicio" class="nav__logo" aria-label="M&M Store — inicio">
@@ -124,17 +124,20 @@
         <img src="assets/img/thumbs/superstar-bape-azul.webp" alt="" loading="eager">
       </figure>
 
+      <span class="hero__side" aria-hidden="true">MEDELLÍN</span>
+
       <div class="hero__inner">
         <span class="hero__kicker"><span class="dot"></span> Sneakers 100% originales · Medellín</span>
         <h1>
           <span class="line"><span class="outline">No sigas</span></span>
-          <span class="line"><span>modas. <em class="fire">Créala.</em></span></span>
+          <span class="line"><span>modas.</span></span>
+          <span class="line"><span class="fire">Créala.</span></span>
         </h1>
-        <p class="hero__tag">— M&M Store, el plug de Medellín 🔥</p>
+        <p class="hero__tag">— M&M Store, el plug de Medellín</p>
         <p class="hero__sub">Yeezy, colabs de <strong>Bad Bunny</strong>, <strong>BAPE</strong> y <strong>Pharrell Williams</strong>, clásicos adidas y guayos. Unidades únicas, <strong>entrega inmediata en Medellín</strong> y envíos a toda Colombia.</p>
         <div class="hero__actions">
-          <a href="#catalogo" class="btn btn--fire">Ver catálogo 👟</a>
-          <a href="#" class="btn btn--ghost" data-wa="Hola M&M Store 👟 Quiero asesoría para elegir mis tenis">Asesoría por WhatsApp</a>
+          <a href="#catalogo" class="btn btn--fire magnetic">Ver catálogo <span class="btn__arrow">→</span></a>
+          <a href="#" class="btn btn--ghost magnetic" data-wa="Hola M&M Store 👟 Quiero asesoría para elegir mis tenis">Asesoría por WhatsApp</a>
         </div>
       </div>
 
@@ -153,37 +156,39 @@
     <section class="section">
       <div class="trust">
         <div class="trust__item reveal" style="--i:0">
-          <span class="trust__icon">✅</span>
+          <svg class="trust__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
           <div><h3>100% Originales</h3><p>Solo vendemos pares auténticos: adidas Originals, Yeezy y colaboraciones oficiales.</p></div>
         </div>
         <div class="trust__item reveal" style="--i:1">
-          <span class="trust__icon">⚡</span>
+          <svg class="trust__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
           <div><h3>Entrega inmediata</h3><p>En Medellín recibes tu par el mismo día. Lo coordinamos por WhatsApp al instante.</p></div>
         </div>
         <div class="trust__item reveal" style="--i:2">
-          <span class="trust__icon">📦</span>
+          <svg class="trust__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg>
           <div><h3>Envíos a todo el país</h3><p>Llegamos a toda Colombia en 1–3 días hábiles con transportadoras confiables.</p></div>
         </div>
         <div class="trust__item reveal" style="--i:3">
-          <span class="trust__icon">👟</span>
+          <svg class="trust__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 16s1-4 4-6 5-2 7-4 3-3 3-3 1 3 4 5 2 5 2 5-2 3-10 3S2 16 2 16z"/><path d="M2 16c0 2 1 4 4 4h12c3 0 4-2 4-4"/></svg>
           <div><h3>Unidades únicas</h3><p>Inventario exclusivo de pares seleccionados. Si ves tu talla, no la dejes ir.</p></div>
         </div>
       </div>
     </section>
 
     <!-- DROPS DESTACADOS -->
-    <section class="section" id="drops">
+    <section class="section section--index" id="drops">
+      <span class="section__num" aria-hidden="true">01</span>
       <div class="section__head">
-        <h2 class="section__title reveal">Drops <em>que no</em> <span class="spray">se repiten</span></h2>
+        <h2 class="section__title reveal">Drops <em>que no</em><br><span class="spray">se repiten</span></h2>
         <p class="section__sub reveal" style="--i:1">Colaboraciones de colección con unidades contadas. Cuando se van, se van.</p>
       </div>
       <div class="drops" id="dropsGrid"></div>
     </section>
 
     <!-- CATÁLOGO -->
-    <section class="section" id="catalogo">
-      <div class="section__head">
-        <h2 class="section__title reveal">El <em>catálogo</em> completo</h2>
+    <section class="section section--index" id="catalogo">
+      <span class="section__num" aria-hidden="true">02</span>
+      <div class="section__head section__head--right">
+        <h2 class="section__title reveal">El <em>catálogo</em><br>completo</h2>
         <p class="section__sub reveal" style="--i:1">Filtra por categoría o busca tu silueta. Precios en pesos colombianos, talla US indicada en cada par.</p>
       </div>
 
@@ -203,11 +208,12 @@
     </section>
 
     <!-- NOSOTROS -->
-    <section class="section" id="nosotros">
+    <section class="section section--index" id="nosotros">
+      <span class="section__num" aria-hidden="true">03</span>
       <div class="about">
         <div class="about__photo reveal">
           <img src="assets/img/brand/owner.webp" alt="Fundador de M&M Store en un evento de sneakers" loading="lazy" width="900" height="1200">
-          <span class="about__sticker">Sneakerhead de corazón 👟</span>
+          <span class="about__sticker">Sneakerhead de corazón</span>
         </div>
         <div>
           <h2 class="section__title reveal">Más que una tienda, <em>una cultura</em></h2>
@@ -224,7 +230,8 @@
     </section>
 
     <!-- FAQ -->
-    <section class="section" id="faq">
+    <section class="section section--index" id="faq">
+      <span class="section__num" aria-hidden="true">04</span>
       <div class="section__head">
         <h2 class="section__title reveal">Preguntas <em>frecuentes</em></h2>
       </div>
@@ -254,9 +261,9 @@
 
     <!-- CTA FINAL -->
     <section class="section cta-final">
-      <h2 class="section__title reveal">¿Listo para <span class="spray">estrenar</span>?</h2>
-      <p class="reveal" style="--i:1">Tu próximo par te está esperando. Entrega inmediata en Medellín 🔥</p>
-      <a href="#" class="btn btn--wa reveal" style="--i:2" data-wa="Hola M&M Store 👟 ¡Quiero estrenar! ¿Qué pares tienes disponibles en mi talla?">💬 Hablar con M&M Store</a>
+      <h2 class="section__title section__title--giant reveal">¿Listo para<br><span class="spray">estrenar?</span></h2>
+      <p class="reveal" style="--i:1">Tu próximo par te está esperando. Entrega inmediata en Medellín.</p>
+      <a href="#" class="btn btn--wa magnetic reveal" style="--i:2" data-wa="Hola M&M Store 👟 ¡Quiero estrenar! ¿Qué pares tienes disponibles en mi talla?">Hablar con M&M Store <span class="btn__arrow">→</span></a>
     </section>
   </main>
 
@@ -295,27 +302,29 @@
   </a>
   <span class="fab__label">¿Dudas? ¡Escríbenos! 👋</span>
   <button class="fab fab--cart" id="cartFab" aria-label="Abrir carrito">
-    🛒<span class="fab__count hide" id="cartCount">0</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="26" height="26"><circle cx="9" cy="21" r="1.6"/><circle cx="19" cy="21" r="1.6"/><path d="M2.5 3h2l3.1 13h11.9l2-9H6.1"/></svg>
+    <span class="fab__count hide" id="cartCount">0</span>
   </button>
 
   <!-- Drawer carrito -->
   <div class="drawer-backdrop" id="drawerBackdrop"></div>
   <aside class="drawer" id="cartDrawer" aria-label="Carrito de compras">
     <div class="drawer__head">
-      <h3>Tu carrito 🔥</h3>
+      <h3>Tu carrito</h3>
       <button class="drawer__close" id="drawerClose" aria-label="Cerrar carrito">✕</button>
     </div>
     <div class="drawer__items" id="cartItems"></div>
     <div class="drawer__foot">
       <div class="drawer__total"><span>Total</span><span id="cartTotal">$0</span></div>
-      <button class="btn btn--wa" id="checkoutBtn">💬 Finalizar por WhatsApp</button>
+      <button class="btn btn--wa" id="checkoutBtn">Finalizar por WhatsApp <span class="btn__arrow">→</span></button>
       <p class="drawer__note">Te confirmamos disponibilidad, pago y entrega al instante.</p>
     </div>
   </aside>
 
   <div class="toast" id="toast"></div>
 
+  <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" defer></script>
   <script src="assets/js/products.js"></script>
-  <script src="assets/js/store.js"></script>
+  <script src="assets/js/store.js" defer></script>
 </body>
 </html>

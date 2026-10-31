@@ -31,14 +31,14 @@ function addToCart(id) {
   if (!p) return;
   const item = cart.find((i) => i.id === id);
   if (item) {
-    if (item.qty >= p.qty) { toast(`Solo quedan ${p.qty} unidad(es) de este par 👟`); return; }
+    if (item.qty >= p.qty) { toast(`Solo quedan ${p.qty} unidad(es) de este par`); return; }
     item.qty++;
   } else {
     cart.push({ id, qty: 1 });
   }
   saveCart(cart);
   renderCart();
-  toast(`${p.name} agregado al carrito 🔥`);
+  toast(`${p.name} agregado al carrito`);
   openDrawer();
 }
 
@@ -66,7 +66,7 @@ function renderCart() {
   const box = document.getElementById("cartItems");
   if (!box) return;
   if (!cart.length) {
-    box.innerHTML = `<p class="drawer__empty">Tu carrito está vacío…<br>¡Los grails no se compran solos! 👟</p>`;
+    box.innerHTML = `<p class="drawer__empty">Tu carrito está vacío…<br>¡Los grails no se compran solos!</p>`;
   } else {
     box.innerHTML = cart.map((i) => {
       const p = byId(i.id);
@@ -83,7 +83,7 @@ function renderCart() {
             <button aria-label="Agregar uno" onclick="setQty('${p.id}', ${i.qty + 1})">+</button>
           </div>
         </div>
-        <button class="ci__rm" aria-label="Eliminar del carrito" onclick="setQty('${p.id}', 0)">🗑</button>
+        <button class="ci__rm" aria-label="Eliminar del carrito" onclick="setQty('${p.id}', 0)">✕</button>
       </div>`;
     }).join("");
   }
@@ -92,7 +92,7 @@ function renderCart() {
 }
 
 function checkout() {
-  if (!cart.length) { toast("Tu carrito está vacío 👟"); return; }
+  if (!cart.length) { toast("Tu carrito está vacío"); return; }
   const lines = cart.map((i) => {
     const p = byId(i.id);
     return `• ${p.name} (${p.sizes}) x${i.qty} — ${fmtCOP(p.price * i.qty)}`;
@@ -201,7 +201,7 @@ if (dropsGrid && typeof PRODUCTS !== "undefined") {
         <h3>${p.name}</h3>
         <p>${p.desc}</p>
         <div class="drop__price">${fmtCOP(p.price)}</div>
-        <a class="btn btn--fire" href="producto/${p.id}.html">Lo quiero 🔥</a>
+        <a class="btn btn--fire" href="producto/${p.id}.html">Lo quiero <span class="btn__arrow">→</span></a>
       </div>
     </article>`;
   }).join("");
@@ -246,6 +246,23 @@ if (parallaxEls.length && !matchMedia("(prefers-reduced-motion: reduce)").matche
 /* ---------- Nav scrolled ---------- */
 const nav = document.getElementById("nav");
 addEventListener("scroll", () => nav?.classList.toggle("scrolled", scrollY > 30), { passive: true });
+
+/* ---------- Smooth scroll (Lenis) ---------- */
+if (window.Lenis && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  const lenis = new Lenis({ lerp: 0.1 });
+  (function raf(t) { lenis.raf(t); requestAnimationFrame(raf); })(performance.now());
+}
+
+/* ---------- Botones magnéticos ---------- */
+if (matchMedia("(pointer: fine)").matches) {
+  document.querySelectorAll(".magnetic").forEach((btn) => {
+    btn.addEventListener("mousemove", (e) => {
+      const r = btn.getBoundingClientRect();
+      btn.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.2}px, ${(e.clientY - r.top - r.height / 2) * 0.35}px)`;
+    });
+    btn.addEventListener("mouseleave", () => { btn.style.transform = ""; });
+  });
+}
 
 /* ---------- Init ---------- */
 const yearEl = document.getElementById("year");
