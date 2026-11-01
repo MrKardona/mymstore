@@ -499,6 +499,8 @@ footer {
 .footer__grid ul a { color: var(--cream-dim); font-size: 0.9rem; transition: color 0.2s; }
 .footer__grid ul a:hover { color: var(--orange); }
 .footer__bottom { max-width: 1380px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; color: var(--cream-dim); font-size: 0.78rem; }
+.footer__admin { color: var(--cream-dim); opacity: 0.7; transition: opacity 0.25s, color 0.25s; }
+.footer__admin:hover { color: var(--orange); opacity: 1; }
 
 /* ---------- FABs flotantes ---------- */
 .fab {
