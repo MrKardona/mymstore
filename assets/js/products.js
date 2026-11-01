@@ -1,5 +1,4 @@
-// Catálogo M&M Store — generado desde el inventario oficial (oct 2026)
-// Precios en COP. img relativo a assets/img/products/
+// Catálogo M&M Store — editado desde el panel /admin
 const PRODUCTS = [
   { id: "bad-bunny-campus", name: "adidas Campus x Bad Bunny", brand: "adidas Originals", cat: "colabs", img: "bad-bunny-campus.webp", price: 600000, sizes: "6 US Men · 7 US Women", qty: 1, tag: "Exclusivo", desc: "Colaboración oficial adidas x Bad Bunny. El Campus más buscado de la colección del conejo malo." },
   { id: "bad-bunny-bo-1-0", name: "adidas BO 1.0 x Bad Bunny", brand: "adidas Originals", cat: "colabs", img: "bad-bunny-bo-1-0.webp", price: 800000, sizes: "8.5 y 9 US Men", qty: 2, tag: "Exclusivo", desc: "La silueta BO 1.0 de la colaboración con Bad Bunny. Pieza de colección para verdaderos fans." },
@@ -37,8 +36,6 @@ const PRODUCTS = [
   { id: "guayos-deportivo-3", name: "Guayos Deportivo III Multiterreno", brand: "adidas Football", cat: "guayos", img: "guayos-deportivo-3.webp", price: 180000, sizes: "8 US Men", qty: 1, tag: "Oferta", desc: "Deportivo III multiterreno. Juega donde quieras al mejor precio." },
   { id: "guayos-f50-league", name: "Guayos F50 League MT", brand: "adidas Football", cat: "guayos", img: "guayos-f50-league.webp", price: 350000, sizes: "9.5 US Men", qty: 1, tag: "Fútbol", desc: "F50 League para terreno firme y multiterreno. Velocidad pura." },
   { id: "mule-adifom-stan-smith", name: "Mule Adifom Stan Smith", brand: "adidas Originals", cat: "lifestyle", img: "mule-adifom-stan-smith.webp", price: 130000, sizes: "10 US Men", qty: 1, tag: "Oferta", desc: "Mule Adifom Stan Smith. Comodidad foam para el día a día, estilo sin esfuerzo." },
-
-  // ---- Drop Nike (31-oct-2026) ----
   { id: "nike-af1-negro", name: "Nike Air Force 1 '07 Negro", brand: "Nike", cat: "nike", img: "nike-af1-negro.webp", price: 450000, sizes: "8.5 US Men", qty: 1, tag: "Nike", desc: "Air Force 1 '07 en negro con Swoosh blanco. El clásico que nunca falla." },
   { id: "nike-af1-blanco", name: "Nike Air Force 1 '07 Blanco", brand: "Nike", cat: "nike", img: "nike-af1-blanco.webp", price: 520000, sizes: "10 US Men", qty: 1, tag: "Nike", desc: "Air Force 1 '07 triple white. El sneaker más icónico del planeta." },
   { id: "nike-af1-mexico", name: "Nike Air Force 1 Low México", brand: "Nike", cat: "nike", img: "nike-af1-mexico.webp", price: 500000, sizes: "7 · 8.5 · 9 US Men", qty: 5, tag: "Especial", desc: "Air Force 1 Low edición México: crema con verde y suela vintage. Pieza de colección." },
