@@ -52,6 +52,10 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--orange); ou
 .tabla th { text-align: left; color: var(--cream-dim); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 .tabla td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
 .tabla tr.dirty td { background: rgba(245, 130, 32, 0.07); }
+#tbody tr { cursor: pointer; transition: background 0.2s; }
+#tbody tr:hover td { background: rgba(246, 242, 234, 0.04); }
+#tbody input, #tbody button { cursor: auto; }
+#tbody button { cursor: pointer; }
 .tabla img { width: 52px; height: 52px; object-fit: contain; background: #fff; border-radius: 10px; }
 .tabla .nombre { font-weight: 700; line-height: 1.25; }
 .tabla .cat { color: var(--cream-dim); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.06em; }

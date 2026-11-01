@@ -176,6 +176,8 @@ function pintar() {
     if (cat !== "all" && p.cat !== cat) continue;
     if (q && !(p.name + " " + p.brand).toLowerCase().includes(q)) continue;
     const tr = document.createElement("tr");
+    tr.dataset.id = p.id;
+    tr.title = "Toca para editar";
     if (p.qty <= 0) tr.classList.add("agotado");
     const foto = p._nueva ? p._nueva : `${RAW}/assets/img/thumbs/${p.img}`;
     tr.innerHTML = `
@@ -240,7 +242,12 @@ document.addEventListener("click", (e) => {
       pintar();
       toast("Eliminado de la lista. Recuerda publicar los cambios.");
     }
+    return;
   }
+  // clic en cualquier parte del producto (foto, nombre…) abre el editor,
+  // excepto sobre los campos rápidos y botones
+  const fila = e.target.closest("#tbody tr[data-id]");
+  if (fila && !e.target.closest("input, button, select, a, textarea")) abrirForm(fila.dataset.id);
 });
 
 $("buscar").addEventListener("input", pintar);
@@ -318,6 +325,12 @@ function abrirForm(id) {
   $("previews").innerHTML = "";
   $("formTitulo").textContent = id ? "Editar producto" : "Nuevo producto";
   const p = id ? PRODUCTOS.find((x) => x.id === id) : null;
+  if (p) {
+    // mostrar la foto principal actual como referencia
+    const fig = document.createElement("figure");
+    fig.innerHTML = `<img src="${p._nueva ? p._nueva : `${RAW}/assets/img/thumbs/${p.img}`}" alt=""><figcaption>ACTUAL</figcaption>`;
+    $("previews").appendChild(fig);
+  }
   $("fNombre").value = p ? p.name : "";
   $("fMarca").value = p ? p.brand : "Nike";
   $("fCat").value = p ? p.cat : "nike";
