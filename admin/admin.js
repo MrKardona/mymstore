@@ -12,7 +12,9 @@ const RAMA = "main";
 const RAW = `https://raw.githubusercontent.com/${REPO}/${RAMA}`;
 
 const $ = (id) => document.getElementById(id);
-const CAT_NOMBRE = { nike: "Nike · Jordan", colabs: "Colabs", yeezy: "Yeezy", lifestyle: "Lifestyle", running: "Running", guayos: "Guayos" };
+let CATS = [];
+let catsDirty = false;
+let CAT_NOMBRE = {};
 
 let PRODUCTOS = [];        // estado editable
 let ORIGINAL = "[]";       // snapshot para detectar cambios
@@ -44,11 +46,29 @@ async function cargar() {
   PRODUCTOS = new Function(code + "; return PRODUCTS;")();
   ORIGINAL = JSON.stringify(PRODUCTOS);
   try {
+    const cc = await (await fetch(`${RAW}/assets/js/categories.js?t=${Date.now()}`)).text();
+    CATS = new Function(cc + "; return CATEGORIAS;")();
+  } catch {
+    CATS = [
+      { id: "nike", nombre: "Nike · Jordan" }, { id: "colabs", nombre: "Colabs" },
+      { id: "yeezy", nombre: "Yeezy" }, { id: "lifestyle", nombre: "Lifestyle" },
+      { id: "running", nombre: "Running" }, { id: "guayos", nombre: "Guayos" },
+    ];
+  }
+  CAT_NOMBRE = Object.fromEntries(CATS.map((c) => [c.id, c.nombre]));
+  poblarCategorias();
+  try {
     const g = await (await fetch(`${RAW}/assets/js/gallery.js?t=${Date.now()}`)).text();
     GALERIA = new Function(g + "; return GALLERY;")();
   } catch { GALERIA = {}; }
   pintar();
   $("estado").textContent = `${PRODUCTOS.length} productos en el catálogo`;
+}
+
+function poblarCategorias() {
+  const ops = CATS.map((c) => `<option value="${c.id}">${c.nombre}</option>`).join("");
+  $("filtroCat").innerHTML = `<option value="all">Todas las categorías</option>` + ops;
+  $("fCat").innerHTML = ops + `<option value="__nueva">➕ Crear nueva categoría…</option>`;
 }
 
 /* ---------- tabla ---------- */
@@ -81,7 +101,7 @@ function pintar() {
 function actualizarCambios() {
   const limpio = PRODUCTOS.map(({ _nueva, ...p }) => p);
   const n = (JSON.stringify(limpio) !== ORIGINAL ? 1 : 0) && (contarCambios() || 1);
-  const hay = JSON.stringify(limpio) !== ORIGINAL || imagenesPendientes.length > 0 || eliminados.length > 0;
+  const hay = JSON.stringify(limpio) !== ORIGINAL || imagenesPendientes.length > 0 || eliminados.length > 0 || catsDirty;
   $("btnPublicar").disabled = !hay || !token();
   $("nCambios").classList.toggle("hide", !hay);
   if (hay) $("nCambios").textContent = contarCambios() + imagenesPendientes.length;
@@ -90,7 +110,7 @@ function contarCambios() {
   try {
     const antes = JSON.parse(ORIGINAL);
     const mapa = Object.fromEntries(antes.map((p) => [p.id, p]));
-    let n = eliminados.length;
+    let n = eliminados.length + (catsDirty ? 1 : 0);
     for (const p of PRODUCTOS) {
       const o = mapa[p.id];
       if (!o) { n++; continue; }
@@ -214,6 +234,21 @@ function abrirForm(id) {
   $("form").classList.remove("hide");
 }
 function cerrarForm() { $("velo").classList.add("hide"); $("form").classList.add("hide"); }
+$("fCat").addEventListener("change", () => {
+  if ($("fCat").value !== "__nueva") return;
+  const nombre = (prompt("Nombre de la nueva categoría (ej: Botas, New Balance, Niños):") || "").trim();
+  if (!nombre) { $("fCat").value = CATS[0].id; return; }
+  let id = slug(nombre) || "categoria";
+  while (CATS.some((c) => c.id === id)) id += "-2";
+  CATS.push({ id, nombre });
+  CAT_NOMBRE[id] = nombre;
+  catsDirty = true;
+  poblarCategorias();
+  $("fCat").value = id;
+  actualizarCambios();
+  toast(`Categoría "${nombre}" creada. Se publica junto con tus cambios.`);
+});
+
 $("btnNuevo").addEventListener("click", () => abrirForm(null));
 $("btnCerrarForm").addEventListener("click", cerrarForm);
 $("btnCancelar").addEventListener("click", cerrarForm);
@@ -329,6 +364,13 @@ $("btnPublicar").addEventListener("click", async () => {
       arbol.push({ path: img.path, mode: "100644", type: "blob", sha: b.sha });
     }
     rotulo.textContent = "Guardando catálogo…";
+    if (catsDirty) {
+      const escC = (x) => String(x).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+      const cuerpo = "// Categorías de la tienda — se administran desde el panel /admin\nconst CATEGORIAS = [\n" +
+        CATS.map((c) => `  { id: "${c.id}", nombre: "${escC(c.nombre)}" }`).join(",\n") + "\n];\n";
+      const bc = await gh(`/repos/${REPO}/git/blobs`, { method: "POST", body: { content: cuerpo, encoding: "utf-8" } });
+      arbol.push({ path: "assets/js/categories.js", mode: "100644", type: "blob", sha: bc.sha });
+    }
     const cat = await gh(`/repos/${REPO}/git/blobs`, { method: "POST", body: { content: serializar(PRODUCTOS), encoding: "utf-8" } });
     arbol.push({ path: "assets/js/products.js", mode: "100644", type: "blob", sha: cat.sha });
     // commit
@@ -339,6 +381,7 @@ $("btnPublicar").addEventListener("click", async () => {
 
     imagenesPendientes = [];
     eliminados = [];
+    catsDirty = false;
     PRODUCTOS.forEach((p) => delete p._nueva);
     ORIGINAL = JSON.stringify(PRODUCTOS);
     pintar();

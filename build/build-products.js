@@ -18,7 +18,11 @@ const PRODUCTS = ctx.PRODUCTS;
 const fmtCOP = (n) => "$" + n.toLocaleString("es-CO");
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 
-const CAT_LABEL = { colabs: "Colaboraciones", yeezy: "Yeezy", lifestyle: "Lifestyle", running: "Running", guayos: "Guayos", nike: "Sneakers" };
+// Categorías desde assets/js/categories.js (administrables desde /admin)
+const catsCtx = {};
+vm.createContext(catsCtx);
+vm.runInContext(fs.readFileSync(path.join(ROOT, "assets/js/categories.js"), "utf8") + "; this.CATEGORIAS = CATEGORIAS;", catsCtx);
+const CAT_LABEL = Object.fromEntries(catsCtx.CATEGORIAS.map((c) => [c.id, c.nombre]));
 
 // Vistas adicionales disponibles en assets/img/products/gallery/<id>-<n>.webp
 const GALLERY_DIR = path.join(ROOT, "assets/img/products/gallery");
@@ -124,7 +128,7 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
         </div>` : ""}
       </div>
       <div>
-        <p class="pdp__brand">${esc(p.brand)} · ${CAT_LABEL[p.cat] || "Sneakers"}</p>
+        <p class="pdp__brand">${esc(p.brand)}${CAT_LABEL[p.cat] && !CAT_LABEL[p.cat].toLowerCase().includes(p.brand.toLowerCase()) ? " · " + CAT_LABEL[p.cat] : ""}</p>
         <h1>${esc(p.name)}</h1>
         <p class="pdp__price">${fmtCOP(p.price)} <small>COP · Precio final</small></p>
         <p class="pdp__stock${agotado ? " pdp__stock--out" : few ? " pdp__stock--few" : ""}"><span class="dot"></span> ${agotado ? "Agotado por ahora" : few ? "¡Última unidad disponible!" : `${p.qty} unidades disponibles`}</p>
@@ -175,6 +179,7 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" defer></script>
+  <script src="../assets/js/categories.js?v=${VER}"></script>
   <script src="../assets/js/products.js?v=${VER}"></script>
   <script src="../assets/js/gallery.js?v=${VER}"></script>
   <script src="../assets/js/store.js?v=${VER}" defer></script>

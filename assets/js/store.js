@@ -195,6 +195,20 @@ function resetFilters() {
   renderGrid();
 }
 
+/* ---------- Chips de categorías (desde categories.js) ---------- */
+const chipTodos = document.querySelector('.chip[data-cat="all"]');
+if (chipTodos && typeof CATEGORIAS !== "undefined") {
+  let prev = chipTodos;
+  for (const c of CATEGORIAS) {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.dataset.cat = c.id;
+    b.textContent = c.nombre;
+    prev.after(b);
+    prev = b;
+  }
+}
+
 document.querySelectorAll(".chip").forEach((chip) => {
   chip.addEventListener("click", () => {
     activeCat = chip.dataset.cat;
