@@ -483,6 +483,45 @@ $("btnCambiarPin").addEventListener("click", async (e) => {
   }
 });
 
+/* ---------- vincular otro dispositivo ---------- */
+$("btnVincular").addEventListener("click", async (e) => {
+  e.preventDefault();
+  if (!PIN_ACTUAL) return toast("Primero entra con tu PIN.", true);
+  const enc = localStorage.getItem("mym_admin_token_enc");
+  if (!enc || !TOKEN) return toast("Este equipo no tiene la clave de GitHub guardada. Hazlo desde el equipo donde sí está.", true);
+  const codigo = "MYM1." + btoa(enc);
+  try {
+    await navigator.clipboard.writeText(codigo);
+    toast("✓ Código copiado. Envíatelo por WhatsApp y pégalo en el otro dispositivo (necesitará tu mismo PIN).");
+  } catch {
+    prompt("Copia este código y envíatelo al otro dispositivo:", codigo);
+  }
+});
+
+$("btnUsarCodigo").addEventListener("click", async () => {
+  if (!PIN_ACTUAL) return toast("Primero entra con tu PIN.", true);
+  const v = $("codigoVinculo").value.trim();
+  if (!v.startsWith("MYM1.")) return toast("Ese código no es válido (debe empezar por MYM1.)", true);
+  try {
+    const enc = atob(v.slice(5));
+    const j = JSON.parse(enc);
+    if (!j.iv || !j.data) throw new Error("estructura inválida");
+    localStorage.setItem("mym_admin_token_enc", enc);
+    TOKEN = await descifrarToken(PIN_ACTUAL);
+    if (!TOKEN) throw new Error("vacío");
+    await validarClave(TOKEN);
+    $("claveOk").classList.remove("hide");
+    $("token").value = "••••••••••••••••";
+    $("codigoVinculo").value = "";
+    actualizarCambios();
+    toast("✓ Dispositivo vinculado. Ya puedes publicar desde aquí. Borra el mensaje con el código.");
+  } catch (err) {
+    localStorage.removeItem("mym_admin_token_enc");
+    TOKEN = "";
+    toast("No se pudo vincular: el código está dañado o fue creado con otro PIN.", true);
+  }
+});
+
 /* ---------- arranque ---------- */
 (async function init() {
   if (localStorage.getItem("mym_admin_token_enc") || localStorage.getItem("mym_admin_token")) {
