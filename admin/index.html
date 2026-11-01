@@ -44,17 +44,7 @@
         <button class="btn" id="btnGuardarClave">Conectar</button>
       </div>
       <p class="ok hide" id="claveOk">✓ Conectado — puedes publicar cambios</p>
-      <p class="clave__pin"><a href="#" id="btnCambiarPin">Cambiar PIN de entrada</a> · <a href="#" id="btnVincular">Vincular otro dispositivo</a></p>
-      <details id="detVincular">
-        <summary>¿Vas a usar el panel en el celular u otro equipo?</summary>
-        <p><strong>En este equipo</strong> (donde ya está la clave): toca <em>"Vincular otro dispositivo"</em> arriba — se copia un código cifrado. Envíatelo por WhatsApp.</p>
-        <p><strong>En el otro dispositivo</strong>: entra con tu PIN y pega aquí ese código:</p>
-        <div class="clave__row">
-          <input id="codigoVinculo" placeholder="MYM1.…" autocomplete="off">
-          <button class="btn" id="btnUsarCodigo" type="button">Vincular</button>
-        </div>
-        <p>El código solo funciona con tu PIN: si alguien lo ve, no le sirve de nada. Igual, borra el mensaje después de usarlo.</p>
-      </details>
+      <p class="clave__pin"><a href="#" id="btnCambiarPin">Cambiar PIN de entrada</a> · <a href="#" id="btnAccesoUni">Activar contraseña de acceso (todos los dispositivos)</a></p>
       <details>
         <summary>¿Cómo creo mi clave? (una sola vez, 2 minutos)</summary>
         <ol>
@@ -139,6 +129,6 @@
 
   <div class="toast hide" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="admin.js?v=5"></script>
+  <script src="admin.js?v=6"></script>
 </body>
 </html>

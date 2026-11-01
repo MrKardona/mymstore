@@ -43,8 +43,45 @@ async function descifrarToken(pin) {
   const b = await crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(iv) }, await clavePin(pin), new Uint8Array(data));
   return new TextDecoder().decode(b);
 }
+/* ---------- Acceso universal: la clave viaja cifrada DENTRO del repo ----------
+ * admin/acceso.enc.json guarda la clave de GitHub cifrada con una contraseña
+ * fuerte (PBKDF2 600.000 iteraciones + AES-GCM). Cualquier dispositivo entra
+ * con solo la contraseña: nada que pegar ni vincular.
+ */
+let ACCESO = null; // {salt, iv, data, iter} si el acceso universal está activo
+
+async function claveMaestra(pass, saltBytes, iter) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: new Uint8Array(saltBytes), iterations: iter, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+  );
+}
+
 async function desbloquear() {
   const pin = $("pinInput").value.trim();
+
+  // Modo contraseña universal
+  if (ACCESO) {
+    $("btnPin").disabled = true;
+    try {
+      const k = await claveMaestra(pin, ACCESO.salt, ACCESO.iter || 600000);
+      const b = await crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(ACCESO.iv) }, k, new Uint8Array(ACCESO.data));
+      TOKEN = new TextDecoder().decode(b);
+      PIN_ACTUAL = pin;
+      $("claveOk").classList.remove("hide");
+      $("token").value = "••••••••••••••••";
+      $("candado").classList.add("hide");
+      actualizarCambios();
+    } catch {
+      $("pinError").classList.remove("hide");
+      $("pinInput").value = "";
+    }
+    $("btnPin").disabled = false;
+    return;
+  }
+
+  // Modo PIN local (mientras no se active el acceso universal)
   const hash = await sha256hex(PIN_SALT + pin);
   const override = localStorage.getItem("mym_pin_hash");
   if (hash !== PIN_HASH && hash !== override) {
@@ -483,42 +520,36 @@ $("btnCambiarPin").addEventListener("click", async (e) => {
   }
 });
 
-/* ---------- vincular otro dispositivo ---------- */
-$("btnVincular").addEventListener("click", async (e) => {
+/* ---------- activar / cambiar la contraseña de acceso universal ---------- */
+$("btnAccesoUni").addEventListener("click", async (e) => {
   e.preventDefault();
-  if (!PIN_ACTUAL) return toast("Primero entra con tu PIN.", true);
-  const enc = localStorage.getItem("mym_admin_token_enc");
-  if (!enc || !TOKEN) return toast("Este equipo no tiene la clave de GitHub guardada. Hazlo desde el equipo donde sí está.", true);
-  const codigo = "MYM1." + btoa(enc);
-  try {
-    await navigator.clipboard.writeText(codigo);
-    toast("✓ Código copiado. Envíatelo por WhatsApp y pégalo en el otro dispositivo (necesitará tu mismo PIN).");
-  } catch {
-    prompt("Copia este código y envíatelo al otro dispositivo:", codigo);
+  if (!TOKEN) return toast("Primero conecta la clave de GitHub en este equipo (solo esta vez).", true);
+  const p1 = (prompt("Contraseña de acceso (mínimo 10 caracteres, con letras y números).\nCon ella entrarás desde cualquier dispositivo:") || "").trim();
+  if (p1.length < 10 || !/[a-zA-Z]/.test(p1) || !/\d/.test(p1)) {
+    return toast("Debe tener al menos 10 caracteres y mezclar letras y números.", true);
   }
-});
-
-$("btnUsarCodigo").addEventListener("click", async () => {
-  if (!PIN_ACTUAL) return toast("Primero entra con tu PIN.", true);
-  const v = $("codigoVinculo").value.trim();
-  if (!v.startsWith("MYM1.")) return toast("Ese código no es válido (debe empezar por MYM1.)", true);
+  const p2 = (prompt("Repite la contraseña:") || "").trim();
+  if (p1 !== p2) return toast("No coinciden.", true);
   try {
-    const enc = atob(v.slice(5));
-    const j = JSON.parse(enc);
-    if (!j.iv || !j.data) throw new Error("estructura inválida");
-    localStorage.setItem("mym_admin_token_enc", enc);
-    TOKEN = await descifrarToken(PIN_ACTUAL);
-    if (!TOKEN) throw new Error("vacío");
-    await validarClave(TOKEN);
-    $("claveOk").classList.remove("hide");
-    $("token").value = "••••••••••••••••";
-    $("codigoVinculo").value = "";
-    actualizarCambios();
-    toast("✓ Dispositivo vinculado. Ya puedes publicar desde aquí. Borra el mensaje con el código.");
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const iter = 600000;
+    const k = await claveMaestra(p1, salt, iter);
+    const data = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, k, new TextEncoder().encode(TOKEN));
+    const cuerpo = JSON.stringify({ v: 1, iter, salt: [...salt], iv: [...iv], data: [...new Uint8Array(data)] });
+    // crear o actualizar admin/acceso.enc.json en el repositorio
+    let sha;
+    try { sha = (await gh(`/repos/${REPO}/contents/admin/acceso.enc.json?ref=${RAMA}`)).sha; } catch {}
+    await gh(`/repos/${REPO}/contents/admin/acceso.enc.json`, {
+      method: "PUT",
+      body: Object.assign(
+        { message: "Admin: contraseña de acceso universal [auto-build]", content: btoa(cuerpo), branch: RAMA },
+        sha ? { sha } : {}
+      ),
+    });
+    toast("✓ Listo. En 1–2 minutos podrás entrar desde cualquier dispositivo solo con esa contraseña.");
   } catch (err) {
-    localStorage.removeItem("mym_admin_token_enc");
-    TOKEN = "";
-    toast("No se pudo vincular: el código está dañado o fue creado con otro PIN.", true);
+    toast("No se pudo activar: " + err.message, true);
   }
 });
 
@@ -527,6 +558,23 @@ $("btnUsarCodigo").addEventListener("click", async () => {
   if (localStorage.getItem("mym_admin_token_enc") || localStorage.getItem("mym_admin_token")) {
     $("token").value = "••••••••••••••••";
   }
+  // ¿Está activo el acceso universal?
+  try {
+    const r = await fetch(`${RAW}/admin/acceso.enc.json?t=${Date.now()}`);
+    if (r.ok) {
+      ACCESO = await r.json();
+      const caja = document.querySelector(".candado__caja p");
+      if (caja) caja.textContent = "Ingresa tu contraseña";
+      $("pinInput").placeholder = "Contraseña";
+      $("pinInput").removeAttribute("maxlength");
+      $("pinInput").style.letterSpacing = "0.1em";
+      $("pinInput").style.fontSize = "1.05rem";
+      $("pinError").textContent = "Contraseña incorrecta";
+      $("btnCambiarPin").classList.add("hide");
+      [...$("btnCambiarPin").parentElement.childNodes].forEach((n) => { if (n.nodeType === 3) n.textContent = ""; });
+      $("btnAccesoUni").textContent = "Cambiar contraseña de acceso";
+    }
+  } catch {}
   $("btnPin").addEventListener("click", desbloquear);
   $("pinInput").addEventListener("keydown", (e) => { if (e.key === "Enter") desbloquear(); });
   $("pinInput").focus();
