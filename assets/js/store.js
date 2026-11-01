@@ -320,6 +320,62 @@ if (matchMedia("(pointer: fine)").matches) {
   });
 }
 
+/* ---------- Recorrido trust: el tenis baja con el scroll y enciende cada paso ---------- */
+const viaje = document.getElementById("viaje");
+if (viaje && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  const shoe = document.getElementById("viajeShoe");
+  const fill = document.getElementById("viajeFill");
+  const pasos = [...viaje.querySelectorAll(".viaje__paso")];
+  let ticking = false;
+
+  // explosión de mini-tenis del logo al encender un punto
+  function explotar(dot) {
+    const dr = dot.getBoundingClientRect();
+    const vr = viaje.getBoundingClientRect();
+    const cx = dr.left - vr.left + dr.width / 2;
+    const cy = dr.top - vr.top + dr.height / 2;
+    for (let i = 0; i < 9; i++) {
+      const img = document.createElement("img");
+      img.src = "assets/img/brand/logo-t.webp";
+      img.alt = "";
+      img.className = "viaje__boom";
+      const ang = (i / 9) * Math.PI * 2 + Math.random() * 0.5;
+      const dist = 46 + Math.random() * 44;
+      img.style.left = cx + "px";
+      img.style.top = cy + "px";
+      img.style.setProperty("--dx", Math.cos(ang) * dist + "px");
+      img.style.setProperty("--dy", Math.sin(ang) * dist + "px");
+      img.style.setProperty("--rot", (Math.random() * 300 - 150) + "deg");
+      img.addEventListener("animationend", () => img.remove());
+      viaje.appendChild(img);
+    }
+  }
+
+  function actualizarViaje() {
+    ticking = false;
+    const r = viaje.getBoundingClientRect();
+    const foco = window.innerHeight * 0.55; // punto de lectura en pantalla
+    const progreso = Math.min(1, Math.max(0, (foco - r.top) / r.height));
+    const y = progreso * r.height;
+    shoe.style.top = y + "px";
+    fill.style.height = y + "px";
+    for (const paso of pasos) {
+      const centro = paso.offsetTop + paso.offsetHeight / 2;
+      const encendido = y >= centro - 8;
+      if (encendido && !paso.classList.contains("lit")) explotar(paso.querySelector(".viaje__dot"));
+      paso.classList.toggle("lit", encendido);
+    }
+  }
+  function pedirViaje() {
+    if (!ticking) { ticking = true; requestAnimationFrame(actualizarViaje); }
+  }
+  window.addEventListener("scroll", pedirViaje, { passive: true });
+  window.addEventListener("resize", pedirViaje);
+  actualizarViaje();
+} else if (viaje) {
+  viaje.querySelectorAll(".viaje__paso").forEach((p) => p.classList.add("lit"));
+}
+
 /* ---------- Logo del hero: kickflip al clic ---------- */
 const heroLogo = document.getElementById("heroLogo");
 heroLogo?.addEventListener("click", () => {
