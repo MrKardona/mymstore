@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;800;900&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/css/style.css?v=tnt6zk">
+  <link rel="stylesheet" href="../assets/css/style.css?v=tnt7r8">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"Air Jordan 4 Retro Denim","image":["https://mrkardona.github.io/mymstore/assets/img/products/jordan-4-denim.webp","https://mrkardona.github.io/mymstore/assets/img/products/gallery/jordan-4-denim-2.webp","https://mrkardona.github.io/mymstore/assets/img/products/gallery/jordan-4-denim-3.webp","https://mrkardona.github.io/mymstore/assets/img/products/gallery/jordan-4-denim-4.webp","https://mrkardona.github.io/mymstore/assets/img/products/gallery/jordan-4-denim-5.webp","https://mrkardona.github.io/mymstore/assets/img/products/gallery/jordan-4-denim-6.webp"],"description":"Air Jordan 4 Retro con upper denim y suela gum. De las más buscadas del año. Talla 7 · 7.5 US Men. $930.000 COP. 100% original, entrega inmediata en Medellín y envíos a toda Colombia.","sku":"jordan-4-denim","brand":{"@type":"Brand","name":"Jordan"},"offers":{"@type":"Offer","url":"https://mrkardona.github.io/mymstore/producto/jordan-4-denim.html","priceCurrency":"COP","price":930000,"availability":"https://schema.org/InStock","itemCondition":"https://schema.org/NewCondition","seller":{"@type":"Organization","name":"M&M Store"}}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":"https://mrkardona.github.io/mymstore/"},{"@type":"ListItem","position":2,"name":"Catálogo","item":"https://mrkardona.github.io/mymstore/#catalogo"},{"@type":"ListItem","position":3,"name":"Air Jordan 4 Retro Denim","item":"https://mrkardona.github.io/mymstore/producto/jordan-4-denim.html"}]}</script>
 </head>
@@ -58,6 +58,16 @@
           <button class="pdp__thumb" type="button" data-src="../assets/img/products/gallery/jordan-4-denim-5.webp" aria-label="Vista 5"><img src="../assets/img/products/gallery/jordan-4-denim-5.webp" alt="" loading="lazy" decoding="async" width="120" height="120"></button>
           <button class="pdp__thumb" type="button" data-src="../assets/img/products/gallery/jordan-4-denim-6.webp" aria-label="Vista 6"><img src="../assets/img/products/gallery/jordan-4-denim-6.webp" alt="" loading="lazy" decoding="async" width="120" height="120"></button>
         </div>
+        <section class="pdp__3d">
+          <div class="pdp__3d-head">
+            <h2>Vista 360°</h2>
+            <p>Gíralo con el dedo, acércalo con dos dedos y míralo por todos lados.</p>
+          </div>
+          <model-viewer src="../assets/3d/jordan-4-denim.glb" alt="Air Jordan 4 Retro Denim en 3D" camera-controls auto-rotate auto-rotate-delay="1200" rotation-per-second="28deg" shadow-intensity="1" exposure="1.05" camera-orbit="35deg 78deg auto" poster="../assets/img/products/jordan-4-denim.webp" loading="lazy" ar ar-modes="scene-viewer webxr quick-look">
+            <div slot="progress-bar"></div>
+          </model-viewer>
+          <p class="pdp__3d-nota">Modelo 3D generado del par real · también en realidad aumentada desde el celular</p>
+        </section>
       </div>
       <div>
         <p class="pdp__brand">Jordan</p>
@@ -111,10 +121,11 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" defer></script>
-  <script src="../assets/js/categories.js?v=tnt6zk"></script>
-  <script src="../assets/js/products.js?v=tnt6zk"></script>
-  <script src="../assets/js/gallery.js?v=tnt6zk"></script>
-  <script src="../assets/js/store.js?v=tnt6zk" defer></script>
+  <script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+  <script src="../assets/js/categories.js?v=tnt7r8"></script>
+  <script src="../assets/js/products.js?v=tnt7r8"></script>
+  <script src="../assets/js/gallery.js?v=tnt7r8"></script>
+  <script src="../assets/js/store.js?v=tnt7r8" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var rel = PRODUCTS.filter(function (x) { return x.cat === "nike" && x.id !== "jordan-4-denim"; }).slice(0, 4);

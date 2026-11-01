@@ -37,6 +37,7 @@ function productPage(p) {
   const url = `${SITE}/producto/${p.id}.html`;
   const img = `${SITE}/assets/img/products/${p.img}`;
   const views = galleryViews(p.id);
+  const tiene3d = fs.existsSync(path.join(ROOT, "assets/3d", p.id + ".glb"));
   const title = `${p.name} — ${fmtCOP(p.price)} | M&M Store Medellín`;
   const desc = `${p.desc} Talla ${p.sizes}. ${fmtCOP(p.price)} COP. 100% original, entrega inmediata en Medellín y envíos a toda Colombia.`;
   const few = p.qty === 1;
@@ -125,7 +126,17 @@ function productPage(p) {
         <div class="pdp__thumbs" id="pdpThumbs" aria-label="Más vistas del producto">
           <button class="pdp__thumb is-active" type="button" data-src="../assets/img/products/${p.img}" aria-label="Vista 1"><img src="../assets/img/products/${p.img}" alt="" loading="lazy" decoding="async" width="120" height="120"></button>
 ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-src="../assets/img/products/gallery/${v}" aria-label="Vista ${i + 2}"><img src="../assets/img/products/gallery/${v}" alt="" loading="lazy" decoding="async" width="120" height="120"></button>`).join("\n")}
-        </div>` : ""}
+        </div>` : ""}${tiene3d ? `
+        <section class="pdp__3d">
+          <div class="pdp__3d-head">
+            <h2>Vista 360°</h2>
+            <p>Gíralo con el dedo, acércalo con dos dedos y míralo por todos lados.</p>
+          </div>
+          <model-viewer src="../assets/3d/${p.id}.glb" alt="${esc(p.name)} en 3D" camera-controls auto-rotate auto-rotate-delay="1200" rotation-per-second="28deg" shadow-intensity="1" exposure="1.05" camera-orbit="35deg 78deg auto" poster="../assets/img/products/${p.img}" loading="lazy" ar ar-modes="scene-viewer webxr quick-look">
+            <div slot="progress-bar"></div>
+          </model-viewer>
+          <p class="pdp__3d-nota">Modelo 3D generado del par real · también en realidad aumentada desde el celular</p>
+        </section>` : ""}
       </div>
       <div>
         <p class="pdp__brand">${esc(p.brand)}${CAT_LABEL[p.cat] && !CAT_LABEL[p.cat].toLowerCase().includes(p.brand.toLowerCase()) ? " · " + CAT_LABEL[p.cat] : ""}</p>
@@ -178,7 +189,8 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
   </aside>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" defer></script>
+  <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" defer></script>${tiene3d ? `
+  <script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>` : ""}
   <script src="../assets/js/categories.js?v=${VER}"></script>
   <script src="../assets/js/products.js?v=${VER}"></script>
   <script src="../assets/js/gallery.js?v=${VER}"></script>
