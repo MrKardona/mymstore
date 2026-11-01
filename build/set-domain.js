@@ -21,9 +21,17 @@ const vieja = cfg.url.replace(/\/+$/, "");
 cfg.url = nueva;
 fs.writeFileSync(cfgPath, JSON.stringify(cfg, null, 2) + "\n");
 
-// 2) URLs absolutas en index.html (canonical, og, JSON-LD)
-const idx = path.join(ROOT, "index.html");
-fs.writeFileSync(idx, fs.readFileSync(idx, "utf8").split(vieja).join(nueva));
+// 2) URLs absolutas (canonical, og, JSON-LD y sitemap de robots)
+for (const nombre of ["index.html", "robots.txt"]) {
+  const f = path.join(ROOT, nombre);
+  fs.writeFileSync(f, fs.readFileSync(f, "utf8").split(vieja).join(nueva));
+}
+
+// El enlace de 404.html es absoluto: debe apuntar a la ruta base del sitio nuevo
+const f404 = path.join(ROOT, "404.html");
+const baseVieja = new URL(vieja).pathname.replace(/\/*$/, "/");
+const baseNueva = new URL(nueva).pathname.replace(/\/*$/, "/");
+fs.writeFileSync(f404, fs.readFileSync(f404, "utf8").split(`href="${baseVieja}"`).join(`href="${baseNueva}"`));
 
 // 3) CNAME para GitHub Pages (solo el host)
 fs.writeFileSync(path.join(ROOT, "CNAME"), new URL(nueva).host + "\n");
