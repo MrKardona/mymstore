@@ -594,6 +594,37 @@ footer {
 .pdp__3d-head p { color: var(--cream-dim); font-size: 0.85rem; margin: 4px 0 12px; }
 .pdp__3d model-viewer { width: 100%; height: clamp(300px, 55vw, 460px); background: #fff; border-radius: 14px; --poster-color: #fff; }
 .pdp__3d-nota { color: var(--cream-dim); font-size: 0.76rem; margin-top: 10px; text-align: center; }
+
+/* ---------- Vista 360° en el home ---------- */
+.show3d { padding: clamp(50px, 8vw, 110px) 24px; }
+.show3d__inner {
+  max-width: 1180px; margin: 0 auto;
+  display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(28px, 5vw, 70px); align-items: center;
+}
+.show3d__kicker { color: var(--orange); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; }
+.show3d__texto h2 {
+  font-family: var(--font-display); text-transform: uppercase;
+  font-size: clamp(2.6rem, 6.5vw, 5rem); line-height: 0.95; margin: 14px 0 18px;
+}
+.show3d__texto h2 em { font-style: normal; color: var(--blue); }
+.show3d__texto p { color: var(--cream-dim); line-height: 1.75; max-width: 46ch; margin-bottom: 24px; }
+.show3d__visor { position: relative; }
+.show3d__visor model-viewer {
+  width: 100%; height: clamp(320px, 42vw, 520px);
+  background: #fff; border-radius: 22px; border: 1px solid var(--line);
+  --poster-color: #fff;
+}
+.show3d__tag {
+  position: absolute; top: 14px; right: 14px;
+  background: var(--orange); color: #1a1208; font-size: 0.64rem; font-weight: 800;
+  letter-spacing: 0.14em; padding: 6px 12px; border-radius: 999px; pointer-events: none;
+  animation: pulse-dot 2.4s infinite;
+}
+@media (max-width: 860px) {
+  .show3d__inner { grid-template-columns: 1fr; }
+  .show3d__visor { order: -1; }
+}
 .pdp__brand { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--blue-soft); margin-bottom: 10px; }
 .pdp h1 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); text-transform: uppercase; line-height: 1.05; margin-bottom: 14px; }
 .pdp__price { font-size: 1.7rem; font-weight: 900; margin-bottom: 4px; }
