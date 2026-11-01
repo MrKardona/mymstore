@@ -567,6 +567,8 @@ $("btnAccesoUni").addEventListener("click", async (e) => {
       if (caja) caja.textContent = "Ingresa tu contraseña";
       $("pinInput").placeholder = "Contraseña";
       $("pinInput").removeAttribute("maxlength");
+      $("pinInput").removeAttribute("inputmode");
+      $("pinInput").setAttribute("autocomplete", "current-password");
       $("pinInput").style.letterSpacing = "0.1em";
       $("pinInput").style.fontSize = "1.05rem";
       $("pinError").textContent = "Contraseña incorrecta";
