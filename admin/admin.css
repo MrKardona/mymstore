@@ -71,19 +71,28 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--orange); ou
 
 .velo { position: fixed; inset: 0; background: rgba(4, 8, 14, 0.7); z-index: 40; }
 .form {
-  position: fixed; z-index: 50; inset: 4vh 0 auto 0; margin: 0 auto; width: min(680px, 94vw);
-  max-height: 92vh; overflow-y: auto;
-  background: var(--ink-2); border: 1px solid var(--line); border-radius: 18px; padding: 20px;
+  position: fixed; z-index: 50; top: 2dvh; left: 0; right: 0; margin: 0 auto; width: min(680px, 94vw);
+  max-height: 96dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  background: var(--ink-2); border: 1px solid var(--line); border-radius: 18px;
+  padding: 20px 20px 0;
+  display: flex; flex-direction: column;
 }
 .form__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .form h2 { font-family: var(--font-display); text-transform: uppercase; font-size: 1.3rem; }
 .form__cerrar { background: none; border: 0; color: var(--cream); font-size: 1.2rem; cursor: pointer; }
-.form__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.form__grid label { font-size: 0.8rem; color: var(--cream-dim); display: grid; gap: 5px; }
+.form__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form__grid label {
+  font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--blue); display: grid; gap: 6px;
+}
+.form__grid input, .form__grid select, .form__grid textarea { background: #0d1829; }
 .form__desc { grid-column: 1 / -1; }
-@media (max-width: 560px) { .form__grid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) {
+  .form { top: 0; width: 100vw; max-height: 100dvh; border-radius: 0; border-left: 0; border-right: 0; }
+  .form__grid { grid-template-columns: 1fr; gap: 12px; }
+}
 
-.fotos { margin-top: 16px; }
+.fotos { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 14px; }
 .fotos p { font-size: 0.85rem; margin-bottom: 8px; }
 .fotos__drop {
   display: block; border: 2px dashed var(--line); border-radius: 14px; padding: 22px;
@@ -99,7 +108,13 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--orange); ou
   position: absolute; right: -6px; top: -6px; width: 22px; height: 22px; border-radius: 50%;
   border: 0; background: var(--bad); color: #fff; font-size: 0.7rem; cursor: pointer;
 }
-.form__acciones { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.form__acciones {
+  display: flex; justify-content: flex-end; gap: 10px;
+  position: sticky; bottom: 0; margin-top: 18px;
+  padding: 14px 0 16px; background: var(--ink-2);
+  border-top: 1px solid var(--line);
+}
+.form__acciones .btn { flex: 1; max-width: 240px; }
 
 .candado {
   position: fixed; inset: 0; z-index: 100; background: var(--ink);
@@ -117,6 +132,32 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--orange); ou
 .candado__caja .btn { width: 100%; max-width: 210px; }
 .candado__error { color: var(--bad) !important; font-weight: 700; }
 .clave__pin { margin-top: 10px; font-size: 0.84rem; }
+
+/* ---------- móvil ---------- */
+@media (max-width: 700px) {
+  .top { flex-wrap: wrap; }
+  .top .btn--publicar { width: 100%; order: 3; }
+  .tabla { min-width: 0; }
+  .tabla thead { display: none; }
+  .tabla tr {
+    display: grid; align-items: center; gap: 8px 12px; padding: 12px 2px;
+    border-bottom: 1px solid var(--line);
+    grid-template-columns: 60px 1fr 96px;
+    grid-template-areas:
+      "foto nombre nombre"
+      "foto precio qty"
+      "acciones tallas tallas";
+  }
+  .tabla td { border: 0; padding: 0; }
+  .tabla td:nth-child(1) { grid-area: foto; }
+  .tabla td:nth-child(2) { grid-area: nombre; }
+  .tabla td:nth-child(3) { grid-area: precio; }
+  .tabla td:nth-child(4) { grid-area: tallas; }
+  .tabla td:nth-child(5) { grid-area: qty; }
+  .tabla td:nth-child(6) { grid-area: acciones; }
+  .tabla .precio, .tabla .tallas, .tabla .qty { width: 100%; }
+  .tabla img { width: 56px; height: 56px; }
+}
 
 .toast {
   position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
