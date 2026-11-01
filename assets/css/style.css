@@ -406,6 +406,9 @@ main, header, footer, section { position: relative; z-index: 1; }
   padding: 5px 10px; border-radius: 999px;
 }
 .card__tag--few { background: var(--ink); color: var(--orange); border: 1px solid var(--orange); }
+.card__tag--out { background: var(--ink); color: var(--cream-dim); border: 1px solid var(--line); }
+.card--soldout .card__media img { filter: grayscale(0.85); opacity: 0.75; }
+.card--soldout .card__price { color: var(--cream-dim); }
 .card__body { padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .card__brand { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue-soft); }
 .card__name { font-weight: 800; font-size: 1.02rem; line-height: 1.3; }
@@ -593,6 +596,8 @@ footer {
 .pdp__stock .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); animation: pulse-dot 1.6s infinite; }
 .pdp__stock--few { color: var(--orange); }
 .pdp__stock--few .dot { background: var(--orange); }
+.pdp__stock--out { color: var(--cream-dim); }
+.pdp__stock--out .dot { background: var(--cream-dim); animation: none; }
 .pdp__desc { color: var(--cream-dim); line-height: 1.75; margin-bottom: 22px; }
 .pdp__row { display: flex; gap: 10px; margin-bottom: 26px; flex-wrap: wrap; }
 .pdp__row .btn { flex: 1; justify-content: center; min-width: 200px; }

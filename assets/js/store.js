@@ -149,10 +149,13 @@ document.querySelectorAll("[data-wa]").forEach((el) => {
 const grid = document.getElementById("productGrid");
 
 function cardHTML(p) {
+  const agotado = p.qty <= 0;
   const few = p.qty === 1;
-  const tag = p.tag ? `<span class="card__tag">${p.tag}</span>` : (few ? `<span class="card__tag card__tag--few">Última unidad</span>` : "");
+  const tag = agotado ? `<span class="card__tag card__tag--out">Agotado</span>`
+    : p.tag ? `<span class="card__tag">${p.tag}</span>`
+    : (few ? `<span class="card__tag card__tag--few">Última unidad</span>` : "");
   return `
-  <article class="card reveal" data-cat="${p.cat}">
+  <article class="card reveal${agotado ? " card--soldout" : ""}" data-cat="${p.cat}">
     <a class="card__media" href="${BASE}producto/${p.id}.html" aria-label="Ver ${p.name}"${typeof GALLERY !== "undefined" && GALLERY[p.id] > 1 ? ` data-alt="${BASE}assets/img/products/gallery/${p.id}-2.webp"` : ""}>
       <img src="${BASE}assets/img/products/${p.img}" alt="${p.name} — ${p.brand} original en M&M Store Medellín" loading="lazy" decoding="async" width="900" height="900">
       ${tag}
@@ -163,7 +166,7 @@ function cardHTML(p) {
       <span class="card__sizes">Talla: ${p.sizes}</span>
       <div class="card__footer">
         <div class="card__price">${fmtCOP(p.price)}</div>
-        <button class="card__add" aria-label="Agregar ${p.name} al carrito" onclick="addToCart('${p.id}')">+</button>
+        ${p.qty <= 0 ? "" : `<button class="card__add" aria-label="Agregar ${p.name} al carrito" onclick="addToCart('${p.id}')">+</button>`}
       </div>
     </div>
   </article>`;

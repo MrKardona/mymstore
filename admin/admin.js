@@ -1,0 +1,363 @@
+/* Panel de administración M&M Store
+ * - Lee el catálogo directo del repositorio (siempre la última versión)
+ * - Permite editar precio/tallas/cantidad, crear, editar y eliminar productos
+ * - Procesa las fotos en el navegador (recorte, cuadrado 900px, WebP)
+ * - Publica TODO en un solo commit vía la API de GitHub; el robot (Action)
+ *   reconstruye las páginas de producto automáticamente.
+ */
+"use strict";
+
+const REPO = "MrKardona/mymstore";
+const RAMA = "main";
+const RAW = `https://raw.githubusercontent.com/${REPO}/${RAMA}`;
+
+const $ = (id) => document.getElementById(id);
+const CAT_NOMBRE = { nike: "Nike · Jordan", colabs: "Colabs", yeezy: "Yeezy", lifestyle: "Lifestyle", running: "Running", guayos: "Guayos" };
+
+let PRODUCTOS = [];        // estado editable
+let ORIGINAL = "[]";       // snapshot para detectar cambios
+let GALERIA = {};          // id -> número de vistas existentes
+let fotosNuevas = [];      // fotos del formulario: {file, canvas900, canvas450}
+let editandoId = null;     // id del producto en edición (null = nuevo)
+let imagenesPendientes = []; // {path, blob} a subir al publicar
+let eliminados = [];
+
+/* ---------- utilidades ---------- */
+const fmtCOP = (n) => "$" + Number(n || 0).toLocaleString("es-CO");
+function toast(msg, esError) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.toggle("error", !!esError);
+  t.classList.remove("hide");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.add("hide"), 4200);
+}
+function slug(nombre) {
+  return nombre.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/['"]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48);
+}
+function token() { return localStorage.getItem("mym_admin_token") || ""; }
+
+/* ---------- carga del catálogo ---------- */
+async function cargar() {
+  const code = await (await fetch(`${RAW}/assets/js/products.js?t=${Date.now()}`)).text();
+  PRODUCTOS = new Function(code + "; return PRODUCTS;")();
+  ORIGINAL = JSON.stringify(PRODUCTOS);
+  try {
+    const g = await (await fetch(`${RAW}/assets/js/gallery.js?t=${Date.now()}`)).text();
+    GALERIA = new Function(g + "; return GALLERY;")();
+  } catch { GALERIA = {}; }
+  pintar();
+  $("estado").textContent = `${PRODUCTOS.length} productos en el catálogo`;
+}
+
+/* ---------- tabla ---------- */
+function pintar() {
+  const q = ($("buscar").value || "").toLowerCase();
+  const cat = $("filtroCat").value;
+  const tb = $("tbody");
+  tb.innerHTML = "";
+  for (const p of PRODUCTOS) {
+    if (cat !== "all" && p.cat !== cat) continue;
+    if (q && !(p.name + " " + p.brand).toLowerCase().includes(q)) continue;
+    const tr = document.createElement("tr");
+    if (p.qty <= 0) tr.classList.add("agotado");
+    const foto = p._nueva ? p._nueva : `${RAW}/assets/img/thumbs/${p.img}`;
+    tr.innerHTML = `
+      <td><img src="${foto}" alt="" loading="lazy"></td>
+      <td><div class="nombre">${p.name}</div><div class="cat">${p.brand} · ${CAT_NOMBRE[p.cat] || p.cat}</div></td>
+      <td><input class="precio" type="number" min="0" step="1000" value="${p.price}" data-id="${p.id}" data-k="price"></td>
+      <td><input class="tallas" value="${p.sizes.replace(/"/g, "&quot;")}" data-id="${p.id}" data-k="sizes"></td>
+      <td><input class="qty" type="number" min="0" step="1" value="${p.qty}" data-id="${p.id}" data-k="qty"></td>
+      <td class="acciones">
+        <button class="icono" title="Editar" data-editar="${p.id}">✎</button>
+        <button class="icono icono--rojo" title="Eliminar" data-borrar="${p.id}">🗑</button>
+      </td>`;
+    tb.appendChild(tr);
+  }
+  actualizarCambios();
+}
+
+function actualizarCambios() {
+  const limpio = PRODUCTOS.map(({ _nueva, ...p }) => p);
+  const n = (JSON.stringify(limpio) !== ORIGINAL ? 1 : 0) && (contarCambios() || 1);
+  const hay = JSON.stringify(limpio) !== ORIGINAL || imagenesPendientes.length > 0 || eliminados.length > 0;
+  $("btnPublicar").disabled = !hay || !token();
+  $("nCambios").classList.toggle("hide", !hay);
+  if (hay) $("nCambios").textContent = contarCambios() + imagenesPendientes.length;
+}
+function contarCambios() {
+  try {
+    const antes = JSON.parse(ORIGINAL);
+    const mapa = Object.fromEntries(antes.map((p) => [p.id, p]));
+    let n = eliminados.length;
+    for (const p of PRODUCTOS) {
+      const o = mapa[p.id];
+      if (!o) { n++; continue; }
+      if (o.price !== p.price || o.qty !== p.qty || o.sizes !== p.sizes || o.name !== p.name ||
+          o.desc !== p.desc || o.tag !== p.tag || o.cat !== p.cat || o.brand !== p.brand) n++;
+    }
+    return n;
+  } catch { return 1; }
+}
+
+document.addEventListener("input", (e) => {
+  const el = e.target;
+  if (!el.dataset || !el.dataset.id) return;
+  const p = PRODUCTOS.find((x) => x.id === el.dataset.id);
+  if (!p) return;
+  const k = el.dataset.k;
+  p[k] = k === "sizes" ? el.value : Math.max(0, parseInt(el.value || "0", 10));
+  el.closest("tr").classList.add("dirty");
+  el.closest("tr").classList.toggle("agotado", p.qty <= 0);
+  actualizarCambios();
+});
+
+document.addEventListener("click", (e) => {
+  const ed = e.target.closest("[data-editar]");
+  if (ed) return abrirForm(ed.dataset.editar);
+  const bo = e.target.closest("[data-borrar]");
+  if (bo) {
+    const p = PRODUCTOS.find((x) => x.id === bo.dataset.borrar);
+    if (p && confirm(`¿Eliminar "${p.name}" del catálogo?\n(Las fotos quedan en el repositorio por si lo devuelves.)`)) {
+      PRODUCTOS = PRODUCTOS.filter((x) => x.id !== p.id);
+      eliminados.push(p.id);
+      pintar();
+      toast("Eliminado de la lista. Recuerda publicar los cambios.");
+    }
+  }
+});
+
+$("buscar").addEventListener("input", pintar);
+$("filtroCat").addEventListener("change", pintar);
+
+/* ---------- clave ---------- */
+async function validarClave(valor) {
+  const r = await fetch(`https://api.github.com/repos/${REPO}`, {
+    headers: { Authorization: "Bearer " + valor, Accept: "application/vnd.github+json" },
+  });
+  if (!r.ok) throw new Error("GitHub respondió " + r.status);
+  const j = await r.json();
+  if (!j.permissions || !j.permissions.push) throw new Error("La clave no tiene permiso de escritura (Contents: Read and write)");
+}
+$("btnGuardarClave").addEventListener("click", async () => {
+  const v = $("token").value.trim();
+  if (!v) return toast("Pega la clave primero", true);
+  $("btnGuardarClave").disabled = true;
+  try {
+    await validarClave(v);
+    localStorage.setItem("mym_admin_token", v);
+    $("claveOk").classList.remove("hide");
+    toast("Clave guardada. Ya puedes publicar.");
+  } catch (err) {
+    toast("Clave inválida: " + err.message, true);
+  }
+  $("btnGuardarClave").disabled = false;
+  actualizarCambios();
+});
+
+/* ---------- fotos: recorte + cuadrado + webp ---------- */
+async function procesarFoto(file) {
+  const bmp = await createImageBitmap(file);
+  // detectar color de fondo (esquina) y recortar bordes de ese color
+  const esc = Math.min(1, 600 / Math.max(bmp.width, bmp.height));
+  const w = Math.round(bmp.width * esc), h = Math.round(bmp.height * esc);
+  const c = Object.assign(document.createElement("canvas"), { width: w, height: h });
+  const cx = c.getContext("2d", { willReadFrequently: true });
+  cx.drawImage(bmp, 0, 0, w, h);
+  const d = cx.getImageData(0, 0, w, h).data;
+  const [br, bg, bb] = [d[0], d[1], d[2]];
+  const difiere = (i) => Math.abs(d[i] - br) + Math.abs(d[i + 1] - bg) + Math.abs(d[i + 2] - bb) > 48;
+  let x0 = w, y0 = h, x1 = 0, y1 = 0;
+  for (let y = 0; y < h; y += 2) for (let x = 0; x < w; x += 2) {
+    if (difiere((y * w + x) * 4)) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  }
+  if (x1 <= x0 || y1 <= y0) { x0 = 0; y0 = 0; x1 = w; y1 = h; }
+  const sx = x0 / esc, sy = y0 / esc, sw = (x1 - x0) / esc, sh = (y1 - y0) / esc;
+
+  function cuadro(size) {
+    const box = size * 0.89;
+    const r = Math.min(box / sw, box / sh);
+    const dw = sw * r, dh = sh * r;
+    const cv = Object.assign(document.createElement("canvas"), { width: size, height: size });
+    const g = cv.getContext("2d");
+    g.fillStyle = `rgb(${br},${bg},${bb})`;
+    g.fillRect(0, 0, size, size);
+    g.imageSmoothingQuality = "high";
+    g.drawImage(bmp, sx, sy, sw, sh, (size - dw) / 2, (size - dh) / 2, dw, dh);
+    return cv;
+  }
+  return { c900: cuadro(900), c450: cuadro(450), url: cuadro(240).toDataURL("image/jpeg", 0.8) };
+}
+function aBlob(canvas) {
+  return new Promise((res, rej) => {
+    canvas.toBlob((b) => (b && b.type === "image/webp" ? res(b) : rej(new Error("Este navegador no genera WebP; usa Chrome o Edge."))), "image/webp", 0.8);
+  });
+}
+
+/* ---------- formulario ---------- */
+function abrirForm(id) {
+  editandoId = id || null;
+  fotosNuevas = [];
+  $("previews").innerHTML = "";
+  $("formTitulo").textContent = id ? "Editar producto" : "Nuevo producto";
+  const p = id ? PRODUCTOS.find((x) => x.id === id) : null;
+  $("fNombre").value = p ? p.name : "";
+  $("fMarca").value = p ? p.brand : "Nike";
+  $("fCat").value = p ? p.cat : "nike";
+  $("fPrecio").value = p ? p.price : "";
+  $("fTallas").value = p ? p.sizes : "";
+  $("fCantidad").value = p ? p.qty : 1;
+  $("fTag").value = p ? p.tag || "" : "";
+  $("fDesc").value = p ? p.desc : "";
+  $("velo").classList.remove("hide");
+  $("form").classList.remove("hide");
+}
+function cerrarForm() { $("velo").classList.add("hide"); $("form").classList.add("hide"); }
+$("btnNuevo").addEventListener("click", () => abrirForm(null));
+$("btnCerrarForm").addEventListener("click", cerrarForm);
+$("btnCancelar").addEventListener("click", cerrarForm);
+$("velo").addEventListener("click", cerrarForm);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") cerrarForm(); });
+
+async function agregarFotos(files) {
+  for (const f of files) {
+    if (!f.type.startsWith("image/")) continue;
+    try {
+      const r = await procesarFoto(f);
+      fotosNuevas.push(r);
+      const fig = document.createElement("figure");
+      fig.innerHTML = `<img src="${r.url}" alt="">` +
+        (fotosNuevas.length === 1 && !editandoId ? "<figcaption>PRINCIPAL</figcaption>" : "") +
+        `<button class="quitar" type="button">✕</button>`;
+      fig.querySelector(".quitar").onclick = () => { fotosNuevas.splice(fotosNuevas.indexOf(r), 1); fig.remove(); };
+      $("previews").appendChild(fig);
+    } catch (err) { toast(err.message, true); }
+  }
+}
+$("fFotos").addEventListener("change", (e) => agregarFotos([...e.target.files]));
+const drop = $("drop");
+["dragover", "dragenter"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("arrastrando"); }));
+["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("arrastrando"); }));
+drop.addEventListener("drop", (e) => agregarFotos([...e.dataTransfer.files]));
+
+$("btnGuardarProducto").addEventListener("click", async () => {
+  const nombre = $("fNombre").value.trim();
+  const precio = parseInt($("fPrecio").value || "0", 10);
+  if (!nombre) return toast("Ponle nombre al producto", true);
+  if (!precio) return toast("Ponle precio", true);
+  if (!editandoId && fotosNuevas.length === 0) return toast("Sube al menos una foto", true);
+
+  let p;
+  if (editandoId) {
+    p = PRODUCTOS.find((x) => x.id === editandoId);
+  } else {
+    let id = slug(nombre) || "producto";
+    while (PRODUCTOS.some((x) => x.id === id)) id += "-2";
+    p = { id, img: id + ".webp", price: 0, qty: 1, tag: "", desc: "" };
+    PRODUCTOS.push(p);
+  }
+  Object.assign(p, {
+    name: nombre, brand: $("fMarca").value.trim() || "Nike", cat: $("fCat").value,
+    price: precio, sizes: $("fTallas").value.trim() || "Única",
+    qty: Math.max(0, parseInt($("fCantidad").value || "0", 10)),
+    tag: $("fTag").value.trim(), desc: $("fDesc").value.trim() || nombre + " 100% original.",
+  });
+
+  // fotos → cola de subida
+  try {
+    let vista = (GALERIA[p.id] || 1);
+    for (let i = 0; i < fotosNuevas.length; i++) {
+      const f = fotosNuevas[i];
+      if (i === 0 && !editandoId) {
+        imagenesPendientes.push({ path: `assets/img/products/${p.id}.webp`, blob: await aBlob(f.c900) });
+        imagenesPendientes.push({ path: `assets/img/thumbs/${p.id}.webp`, blob: await aBlob(f.c450) });
+        p._nueva = f.url;
+      } else {
+        vista += 1;
+        imagenesPendientes.push({ path: `assets/img/products/gallery/${p.id}-${vista}.webp`, blob: await aBlob(f.c900) });
+      }
+    }
+    GALERIA[p.id] = vista;
+  } catch (err) { return toast(err.message, true); }
+
+  cerrarForm();
+  pintar();
+  toast(editandoId ? "Producto actualizado en la lista." : "Producto agregado al final del catálogo. Recuerda publicar.");
+  editandoId = null;
+});
+
+/* ---------- publicar: un solo commit con la API de GitHub ---------- */
+async function gh(ruta, opt = {}) {
+  const r = await fetch("https://api.github.com" + ruta, {
+    method: opt.method || "GET",
+    headers: { Authorization: "Bearer " + token(), Accept: "application/vnd.github+json" },
+    body: opt.body ? JSON.stringify(opt.body) : undefined,
+  });
+  if (!r.ok) throw new Error(`GitHub ${r.status}: ${(await r.text()).slice(0, 180)}`);
+  return r.json();
+}
+const blobABase64 = (blob) => new Promise((res) => {
+  const fr = new FileReader();
+  fr.onload = () => res(String(fr.result).split(",")[1]);
+  fr.readAsDataURL(blob);
+});
+function serializar(lista) {
+  const esc = (s) => String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  const filas = lista.map(({ _nueva, ...p }) =>
+    `  { id: "${p.id}", name: "${esc(p.name)}", brand: "${esc(p.brand)}", cat: "${p.cat}", img: "${p.img}", price: ${p.price}, sizes: "${esc(p.sizes)}", qty: ${p.qty}, tag: "${esc(p.tag)}", desc: "${esc(p.desc)}" }`);
+  return `// Catálogo M&M Store — editado desde el panel /admin\nconst PRODUCTS = [\n${filas.join(",\n")}\n];\n`;
+}
+
+$("btnPublicar").addEventListener("click", async () => {
+  if (!token()) return toast("Primero conecta tu clave de acceso", true);
+  const btn = $("btnPublicar");
+  btn.disabled = true;
+  const antes = btn.textContent;
+  try {
+    btn.textContent = "Publicando…";
+    // base
+    const ref = await gh(`/repos/${REPO}/git/ref/heads/${RAMA}`);
+    const baseSha = ref.object.sha;
+    const baseCommit = await gh(`/repos/${REPO}/git/commits/${baseSha}`);
+    // blobs
+    const arbol = [];
+    let n = 0;
+    for (const img of imagenesPendientes) {
+      btn.textContent = `Subiendo fotos ${++n}/${imagenesPendientes.length}…`;
+      const b = await gh(`/repos/${REPO}/git/blobs`, { method: "POST", body: { content: await blobABase64(img.blob), encoding: "base64" } });
+      arbol.push({ path: img.path, mode: "100644", type: "blob", sha: b.sha });
+    }
+    btn.textContent = "Guardando catálogo…";
+    const cat = await gh(`/repos/${REPO}/git/blobs`, { method: "POST", body: { content: serializar(PRODUCTOS), encoding: "utf-8" } });
+    arbol.push({ path: "assets/js/products.js", mode: "100644", type: "blob", sha: cat.sha });
+    // commit
+    const tree = await gh(`/repos/${REPO}/git/trees`, { method: "POST", body: { base_tree: baseCommit.tree.sha, tree: arbol } });
+    const msg = `Admin: ${contarCambios()} cambio(s) de inventario` + (imagenesPendientes.length ? ` + ${imagenesPendientes.length} foto(s)` : "");
+    const commit = await gh(`/repos/${REPO}/git/commits`, { method: "POST", body: { message: msg, tree: tree.sha, parents: [baseSha] } });
+    await gh(`/repos/${REPO}/git/refs/heads/${RAMA}`, { method: "PATCH", body: { sha: commit.sha } });
+
+    imagenesPendientes = [];
+    eliminados = [];
+    PRODUCTOS.forEach((p) => delete p._nueva);
+    ORIGINAL = JSON.stringify(PRODUCTOS);
+    pintar();
+    toast("✓ Publicado. La tienda se actualiza en 1–2 minutos.");
+    $("estado").textContent = `${PRODUCTOS.length} productos · publicado ${new Date().toLocaleTimeString("es-CO")}`;
+  } catch (err) {
+    toast("No se pudo publicar: " + err.message, true);
+  }
+  btn.textContent = antes.replace(/\s+\d+$/, "");
+  btn.disabled = false;
+  actualizarCambios();
+});
+
+/* ---------- arranque ---------- */
+(async function init() {
+  if (token()) {
+    $("token").value = "••••••••••••••••";
+    $("claveOk").classList.remove("hide");
+  }
+  try { await cargar(); }
+  catch (e) { $("estado").textContent = "No pude cargar el catálogo: " + e.message; }
+})();

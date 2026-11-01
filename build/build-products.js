@@ -5,7 +5,9 @@ const path = require("path");
 const vm = require("vm");
 
 const ROOT = path.join(__dirname, "..");
-const SITE = "https://mrkardona.github.io/mymstore";
+const SITE = JSON.parse(fs.readFileSync(path.join(ROOT, "site.config.json"), "utf8")).url.replace(/\/+$/, "");
+// Versión de caché: cambia en cada build para que los celulares no sirvan archivos viejos
+const VER = Math.floor(Date.now() / 1000).toString(36);
 
 // Cargar PRODUCTS desde assets/js/products.js
 const ctx = {};
@@ -34,6 +36,7 @@ function productPage(p) {
   const title = `${p.name} — ${fmtCOP(p.price)} | M&M Store Medellín`;
   const desc = `${p.desc} Talla ${p.sizes}. ${fmtCOP(p.price)} COP. 100% original, entrega inmediata en Medellín y envíos a toda Colombia.`;
   const few = p.qty === 1;
+  const agotado = p.qty <= 0;
 
   const jsonld = {
     "@context": "https://schema.org",
@@ -48,7 +51,7 @@ function productPage(p) {
       url,
       priceCurrency: "COP",
       price: p.price,
-      availability: "https://schema.org/InStock",
+      availability: agotado ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
       itemCondition: "https://schema.org/NewCondition",
       seller: { "@type": "Organization", name: "M&M Store" },
     },
@@ -89,7 +92,7 @@ function productPage(p) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;800;900&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/css/style.css?v=11">
+  <link rel="stylesheet" href="../assets/css/style.css?v=${VER}">
   <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
   <script type="application/ld+json">${JSON.stringify(crumbs)}</script>
 </head>
@@ -124,11 +127,11 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
         <p class="pdp__brand">${esc(p.brand)} · ${CAT_LABEL[p.cat] || "Sneakers"}</p>
         <h1>${esc(p.name)}</h1>
         <p class="pdp__price">${fmtCOP(p.price)} <small>COP · Precio final</small></p>
-        <p class="pdp__stock${few ? " pdp__stock--few" : ""}"><span class="dot"></span> ${few ? "¡Última unidad disponible!" : `${p.qty} unidades disponibles`}</p>
+        <p class="pdp__stock${agotado ? " pdp__stock--out" : few ? " pdp__stock--few" : ""}"><span class="dot"></span> ${agotado ? "Agotado por ahora" : few ? "¡Última unidad disponible!" : `${p.qty} unidades disponibles`}</p>
         <p class="pdp__desc">${esc(p.desc)}</p>
         <div class="pdp__row">
-          <button class="btn btn--fire magnetic" onclick="addToCart('${p.id}')">Agregar al carrito</button>
-          <a href="#" class="btn btn--wa magnetic" data-wa="Hola M&M Store 👟 Quiero el ${esc(p.name)} (${esc(p.sizes)}) por ${fmtCOP(p.price)}. ¿Está disponible?">Comprar ya por WhatsApp <span class="btn__arrow">→</span></a>
+          ${agotado ? "" : `<button class="btn btn--fire magnetic" onclick="addToCart('${p.id}')">Agregar al carrito</button>`}
+          <a href="#" class="btn btn--wa magnetic" data-wa="Hola M&M Store 👟 Quiero el ${esc(p.name)} (${esc(p.sizes)}) por ${fmtCOP(p.price)}. ¿Está disponible?">${agotado ? "Avísame cuando vuelva" : "Comprar ya por WhatsApp"} <span class="btn__arrow">→</span></a>
         </div>
         <dl class="pdp__meta">
           <div><dt>Talla</dt><dd>${esc(p.sizes)}</dd></div>
@@ -172,9 +175,9 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" defer></script>
-  <script src="../assets/js/products.js?v=11"></script>
-  <script src="../assets/js/gallery.js?v=2"></script>
-  <script src="../assets/js/store.js?v=10" defer></script>
+  <script src="../assets/js/products.js?v=${VER}"></script>
+  <script src="../assets/js/gallery.js?v=${VER}"></script>
+  <script src="../assets/js/store.js?v=${VER}" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var rel = PRODUCTS.filter(function (x) { return x.cat === "${p.cat}" && x.id !== "${p.id}"; }).slice(0, 4);
@@ -214,4 +217,27 @@ ${urls.map((u) => `  <url><loc>${u}</loc><lastmod>${today}</lastmod><changefreq>
 </urlset>`;
 fs.writeFileSync(path.join(ROOT, "sitemap.xml"), sitemap);
 
-console.log(`OK: ${PRODUCTS.length} páginas de producto + sitemap.xml`);
+// assets/js/gallery.js: número de vistas por producto (para el hover de las tarjetas)
+const counts = {};
+if (fs.existsSync(GALLERY_DIR)) {
+  for (const f of fs.readdirSync(GALLERY_DIR)) {
+    const m = f.match(/^(.+)-(\d+)\.webp$/);
+    if (m) counts[m[1]] = Math.max(counts[m[1]] || 1, parseInt(m[2], 10));
+  }
+}
+fs.writeFileSync(
+  path.join(ROOT, "assets/js/gallery.js"),
+  "// Generado por build/build-products.js — no editar a mano\nconst GALLERY = " + JSON.stringify(counts) + ";\n"
+);
+
+// index.html: refrescar versiones de caché de los 4 assets
+const idxPath = path.join(ROOT, "index.html");
+let idx = fs.readFileSync(idxPath, "utf8");
+idx = idx
+  .replace(/assets\/css\/style\.css\?v=[^"]+/, "assets/css/style.css?v=" + VER)
+  .replace(/assets\/js\/products\.js\?v=[^"]+/, "assets/js/products.js?v=" + VER)
+  .replace(/assets\/js\/gallery\.js\?v=[^"]+/, "assets/js/gallery.js?v=" + VER)
+  .replace(/assets\/js\/store\.js\?v=[^"]+/, "assets/js/store.js?v=" + VER);
+fs.writeFileSync(idxPath, idx);
+
+console.log("OK: " + PRODUCTS.length + " páginas + sitemap + gallery.js (v=" + VER + ")");

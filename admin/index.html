@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel M&M Store</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0b1420">
+  <link rel="icon" type="image/png" sizes="48x48" href="../assets/img/brand/favicon-48.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header class="top">
+    <img src="../assets/img/brand/logo-t.webp" alt="M&M Store" width="46" height="46">
+    <div class="top__title">
+      <h1>Panel M&M Store</h1>
+      <p id="estado">Cargando inventario…</p>
+    </div>
+    <button class="btn btn--publicar" id="btnPublicar" disabled>Publicar cambios <span id="nCambios" class="pill hide">0</span></button>
+  </header>
+
+  <!-- Clave de acceso -->
+  <section class="card" id="cardClave">
+    <div class="clave">
+      <label for="token"><strong>Clave de acceso</strong> (se guarda solo en este navegador)</label>
+      <div class="clave__row">
+        <input type="password" id="token" placeholder="github_pat_…" autocomplete="off">
+        <button class="btn" id="btnGuardarClave">Conectar</button>
+      </div>
+      <p class="ok hide" id="claveOk">✓ Conectado — puedes publicar cambios</p>
+      <details>
+        <summary>¿Cómo creo mi clave? (una sola vez, 2 minutos)</summary>
+        <ol>
+          <li>Entra a <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a> (inicia sesión con la cuenta <strong>MrKardona</strong>).</li>
+          <li>En <em>Token name</em> pon: <code>panel-mymstore</code>. En <em>Expiration</em> elige <strong>No expiration</strong> (o 1 año).</li>
+          <li>En <em>Repository access</em> elige <strong>Only select repositories</strong> → marca <code>mymstore</code>.</li>
+          <li>En <em>Permissions → Repository permissions</em> busca <strong>Contents</strong> y ponlo en <strong>Read and write</strong>.</li>
+          <li>Botón verde <em>Generate token</em>, copia la clave que empieza por <code>github_pat_</code> y pégala aquí arriba.</li>
+        </ol>
+        <p>Esa clave es tu contraseña: no la compartas. Si la pierdes, generas otra igual.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- Barra de herramientas -->
+  <section class="toolbar">
+    <input type="search" id="buscar" placeholder="Buscar producto…">
+    <select id="filtroCat">
+      <option value="all">Todas las categorías</option>
+      <option value="nike">Nike · Jordan</option>
+      <option value="colabs">Colabs</option>
+      <option value="yeezy">Yeezy</option>
+      <option value="lifestyle">Lifestyle</option>
+      <option value="running">Running</option>
+      <option value="guayos">Guayos</option>
+    </select>
+    <button class="btn btn--nuevo" id="btnNuevo">+ Nuevo producto</button>
+  </section>
+
+  <!-- Inventario -->
+  <section class="card">
+    <table class="tabla" id="tabla">
+      <thead>
+        <tr><th>Foto</th><th>Producto</th><th>Precio (COP)</th><th>Tallas</th><th>Cant.</th><th></th></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <p class="nota">Cambia precio, tallas o cantidad directo en la tabla. Cantidad 0 = se muestra <strong>Agotado</strong> en la tienda. Al terminar pulsa <strong>Publicar cambios</strong>.</p>
+  </section>
+
+  <!-- Formulario nuevo / editar -->
+  <div class="velo hide" id="velo"></div>
+  <section class="form hide" id="form" aria-label="Formulario de producto">
+    <div class="form__head">
+      <h2 id="formTitulo">Nuevo producto</h2>
+      <button class="form__cerrar" id="btnCerrarForm" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="form__grid">
+      <label>Nombre <input id="fNombre" placeholder="Nike Air Max 90 Blanco"></label>
+      <label>Marca <input id="fMarca" placeholder="Nike" list="marcas">
+        <datalist id="marcas"><option>Nike</option><option>Jordan</option><option>adidas Originals</option><option>adidas Running</option><option>adidas Football</option><option>Yeezy</option></datalist>
+      </label>
+      <label>Categoría
+        <select id="fCat">
+          <option value="nike">Nike · Jordan</option>
+          <option value="colabs">Colabs</option>
+          <option value="yeezy">Yeezy</option>
+          <option value="lifestyle">Lifestyle</option>
+          <option value="running">Running</option>
+          <option value="guayos">Guayos</option>
+        </select>
+      </label>
+      <label>Precio (COP) <input id="fPrecio" type="number" min="0" step="1000" placeholder="450000"></label>
+      <label>Tallas <input id="fTallas" placeholder="8.5 US Men"></label>
+      <label>Cantidad <input id="fCantidad" type="number" min="0" step="1" value="1"></label>
+      <label>Etiqueta (opcional) <input id="fTag" placeholder="Nike, Hype, Oferta…"></label>
+      <label class="form__desc">Descripción <textarea id="fDesc" rows="2" placeholder="Una frase que venda el par."></textarea></label>
+    </div>
+    <div class="fotos">
+      <p><strong>Fotos</strong> — la primera será la principal. Se recortan y optimizan solas.</p>
+      <label class="fotos__drop" id="drop">
+        <input type="file" id="fFotos" accept="image/*" multiple hidden>
+        Arrastra las fotos aquí o <u>toca para elegirlas</u>
+      </label>
+      <div class="fotos__previews" id="previews"></div>
+    </div>
+    <div class="form__acciones">
+      <button class="btn btn--sec" id="btnCancelar">Cancelar</button>
+      <button class="btn" id="btnGuardarProducto">Guardar en la lista</button>
+    </div>
+  </section>
+
+  <div class="toast hide" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "url": "https://mrkardona.github.io/mymstore",
+  "nombre": "M&M Store",
+  "repo": "MrKardona/mymstore",
+  "rama": "main",
+  "nota": "Cuando llegue el dominio propio: ejecutar `node build/set-domain.js https://tudominio.com` y configurar el dominio en GitHub Pages."
+}
