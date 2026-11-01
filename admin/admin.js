@@ -11,6 +11,64 @@ const REPO = "MrKardona/mymstore";
 const RAMA = "main";
 const RAW = `https://raw.githubusercontent.com/${REPO}/${RAMA}`;
 
+/* ---------- PIN de entrada ----------
+ * El PIN protege la entrada al panel y CIFRA la clave de GitHub guardada.
+ * PIN inicial: 1234 (cámbialo con "Cambiar PIN de entrada").
+ */
+const PIN_SALT = "mym-7f3a19";
+let PIN_HASH = "fc92c49d21c293045aaa173a62f04fba3ed36f341c842e1328d2dd78f9b1d7fe";
+let PIN_ACTUAL = "";   // en memoria mientras la pestaña está abierta
+let TOKEN = "";        // clave de GitHub descifrada, solo en memoria
+
+async function sha256hex(txt) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(txt));
+  return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
+}
+async function clavePin(pin) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: new TextEncoder().encode(PIN_SALT), iterations: 120000, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+  );
+}
+async function cifrarToken(tok, pin) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await clavePin(pin), new TextEncoder().encode(tok));
+  localStorage.setItem("mym_admin_token_enc", JSON.stringify({ iv: [...iv], data: [...new Uint8Array(data)] }));
+}
+async function descifrarToken(pin) {
+  const raw = localStorage.getItem("mym_admin_token_enc");
+  if (!raw) return "";
+  const { iv, data } = JSON.parse(raw);
+  const b = await crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(iv) }, await clavePin(pin), new Uint8Array(data));
+  return new TextDecoder().decode(b);
+}
+async function desbloquear() {
+  const pin = $("pinInput").value.trim();
+  const hash = await sha256hex(PIN_SALT + pin);
+  const override = localStorage.getItem("mym_pin_hash");
+  if (hash !== PIN_HASH && hash !== override) {
+    $("pinError").classList.remove("hide");
+    $("pinInput").value = "";
+    return;
+  }
+  PIN_ACTUAL = pin;
+  // migrar clave vieja en texto plano, o descifrar la existente
+  const plano = localStorage.getItem("mym_admin_token");
+  if (plano && !plano.startsWith("•")) {
+    await cifrarToken(plano, pin);
+    localStorage.removeItem("mym_admin_token");
+    TOKEN = plano;
+  } else {
+    try { TOKEN = await descifrarToken(pin); }
+    catch { TOKEN = ""; localStorage.removeItem("mym_admin_token_enc"); toast("Tu clave de GitHub estaba cifrada con otro PIN: vuelve a pegarla.", true); }
+  }
+  if (TOKEN) $("claveOk").classList.remove("hide");
+  $("candado").classList.add("hide");
+  if (hash === (await sha256hex(PIN_SALT + "1234"))) toast("Estás usando el PIN inicial 1234: cámbialo con \"Cambiar PIN de entrada\".", true);
+  actualizarCambios();
+}
+
 const $ = (id) => document.getElementById(id);
 let CATS = [];
 let catsDirty = false;
@@ -38,7 +96,7 @@ function slug(nombre) {
   return nombre.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
     .replace(/['"]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48);
 }
-function token() { return localStorage.getItem("mym_admin_token") || ""; }
+function token() { return TOKEN; }
 
 /* ---------- carga del catálogo ---------- */
 async function cargar() {
@@ -166,7 +224,8 @@ $("btnGuardarClave").addEventListener("click", async () => {
   $("btnGuardarClave").disabled = true;
   try {
     await validarClave(v);
-    localStorage.setItem("mym_admin_token", v);
+    TOKEN = v;
+    await cifrarToken(v, PIN_ACTUAL);
     $("claveOk").classList.remove("hide");
     toast("Clave guardada. Ya puedes publicar.");
   } catch (err) {
@@ -395,12 +454,43 @@ $("btnPublicar").addEventListener("click", async () => {
   actualizarCambios();
 });
 
+/* ---------- cambiar PIN ---------- */
+$("btnCambiarPin").addEventListener("click", async (e) => {
+  e.preventDefault();
+  if (!PIN_ACTUAL) return toast("Primero entra con tu PIN actual.", true);
+  const p1 = (prompt("Nuevo PIN (4 a 8 dígitos):") || "").trim();
+  if (!/^\d{4,8}$/.test(p1)) return toast("El PIN debe ser de 4 a 8 dígitos.", true);
+  const p2 = (prompt("Repite el nuevo PIN:") || "").trim();
+  if (p1 !== p2) return toast("Los PIN no coinciden.", true);
+  const nuevoHash = await sha256hex(PIN_SALT + p1);
+  localStorage.setItem("mym_pin_hash", nuevoHash);
+  if (TOKEN) await cifrarToken(TOKEN, p1);
+  PIN_ACTUAL = p1;
+  // publicar el nuevo PIN en el código del panel (para que aplique en cualquier dispositivo)
+  if (TOKEN) {
+    try {
+      const actual = await gh(`/repos/${REPO}/contents/admin/admin.js?ref=${RAMA}`);
+      const codigo = decodeURIComponent(escape(atob(actual.content)));
+      const nuevo = codigo.replace(/let PIN_HASH = "[0-9a-f]+";/, `let PIN_HASH = "${nuevoHash}";`);
+      await gh(`/repos/${REPO}/contents/admin/admin.js`, {
+        method: "PUT",
+        body: { message: "Admin: cambio de PIN [auto-build]", content: btoa(unescape(encodeURIComponent(nuevo))), sha: actual.sha, branch: RAMA },
+      });
+      toast("✓ PIN cambiado. En 1–2 minutos aplica también en otros dispositivos.");
+    } catch (err) { toast("PIN cambiado en este navegador, pero no pude publicarlo: " + err.message, true); }
+  } else {
+    toast("PIN cambiado en este navegador. Conecta tu clave para publicarlo a todos los dispositivos.");
+  }
+});
+
 /* ---------- arranque ---------- */
 (async function init() {
-  if (token()) {
+  if (localStorage.getItem("mym_admin_token_enc") || localStorage.getItem("mym_admin_token")) {
     $("token").value = "••••••••••••••••";
-    $("claveOk").classList.remove("hide");
   }
+  $("btnPin").addEventListener("click", desbloquear);
+  $("pinInput").addEventListener("keydown", (e) => { if (e.key === "Enter") desbloquear(); });
+  $("pinInput").focus();
   try { await cargar(); }
   catch (e) { $("estado").textContent = "No pude cargar el catálogo: " + e.message; }
 })();

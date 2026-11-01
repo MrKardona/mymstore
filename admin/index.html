@@ -14,6 +14,18 @@
   <link rel="stylesheet" href="admin.css">
 </head>
 <body>
+  <!-- Pantalla de bloqueo -->
+  <div class="candado" id="candado">
+    <div class="candado__caja">
+      <img src="../assets/img/brand/logo-t.webp" alt="M&M Store" width="84" height="84">
+      <h2>Panel M&M Store</h2>
+      <p>Ingresa tu PIN</p>
+      <input type="password" id="pinInput" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••">
+      <button class="btn" id="btnPin">Entrar</button>
+      <p class="candado__error hide" id="pinError">PIN incorrecto</p>
+    </div>
+  </div>
+
   <header class="top">
     <img src="../assets/img/brand/logo-t.webp" alt="M&M Store" width="46" height="46">
     <div class="top__title">
@@ -32,6 +44,7 @@
         <button class="btn" id="btnGuardarClave">Conectar</button>
       </div>
       <p class="ok hide" id="claveOk">✓ Conectado — puedes publicar cambios</p>
+      <p class="clave__pin"><a href="#" id="btnCambiarPin">Cambiar PIN de entrada</a></p>
       <details>
         <summary>¿Cómo creo mi clave? (una sola vez, 2 minutos)</summary>
         <ol>
@@ -116,6 +129,6 @@
 
   <div class="toast hide" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="admin.js?v=3"></script>
+  <script src="admin.js?v=4"></script>
 </body>
 </html>
