@@ -675,6 +675,7 @@ footer {
 }
 .show3d__texto h2 em { font-style: normal; color: var(--blue); }
 .show3d__texto p { color: var(--cream-dim); line-height: 1.75; max-width: 46ch; margin-bottom: 24px; }
+.show3d__texto p.show3d__nota { font-size: 0.78rem; line-height: 1.5; margin-top: -12px; }
 .show3d__visor { position: relative; }
 .show3d__visor model-viewer {
   width: 100%; height: clamp(320px, 42vw, 520px);

@@ -135,7 +135,7 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
           <model-viewer src="../assets/3d/${p.id}.glb" alt="${esc(p.name)} en 3D" camera-controls auto-rotate auto-rotate-delay="1200" rotation-per-second="28deg" shadow-intensity="1" exposure="1.05" camera-orbit="35deg 78deg auto" poster="../assets/img/products/${p.img}" loading="lazy" ar ar-modes="scene-viewer webxr quick-look">
             <div slot="progress-bar"></div>
           </model-viewer>
-          <p class="pdp__3d-nota">Modelo 3D generado del par real · también en realidad aumentada desde el celular</p>
+          <p class="pdp__3d-nota">Modelo 3D de referencia creado con IA a partir de fotos de catálogo; los detalles pueden variar frente al par físico. En celulares compatibles también se ve en realidad aumentada.</p>
         </section>` : ""}
       </div>
       <div>
