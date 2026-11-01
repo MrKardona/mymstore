@@ -16,7 +16,7 @@ const RAW = `https://raw.githubusercontent.com/${REPO}/${RAMA}`;
  * PIN inicial: 1234 (cámbialo con "Cambiar PIN de entrada").
  */
 const PIN_SALT = "mym-7f3a19";
-let PIN_HASH = "fc92c49d21c293045aaa173a62f04fba3ed36f341c842e1328d2dd78f9b1d7fe";
+let PIN_HASH = "6f9210943923b08ea80a251605f755c48de9b3e6d5e24bc075db96c6b64cb1c9";
 let PIN_ACTUAL = "";   // en memoria mientras la pestaña está abierta
 let TOKEN = "";        // clave de GitHub descifrada, solo en memoria
 
