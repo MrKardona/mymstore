@@ -313,9 +313,9 @@ $("btnPublicar").addEventListener("click", async () => {
   if (!token()) return toast("Primero conecta tu clave de acceso", true);
   const btn = $("btnPublicar");
   btn.disabled = true;
-  const antes = btn.textContent;
+  const rotulo = $("pubTxt");
   try {
-    btn.textContent = "Publicando…";
+    rotulo.textContent = "Publicando…";
     // base
     const ref = await gh(`/repos/${REPO}/git/ref/heads/${RAMA}`);
     const baseSha = ref.object.sha;
@@ -324,11 +324,11 @@ $("btnPublicar").addEventListener("click", async () => {
     const arbol = [];
     let n = 0;
     for (const img of imagenesPendientes) {
-      btn.textContent = `Subiendo fotos ${++n}/${imagenesPendientes.length}…`;
+      rotulo.textContent = `Subiendo fotos ${++n}/${imagenesPendientes.length}…`;
       const b = await gh(`/repos/${REPO}/git/blobs`, { method: "POST", body: { content: await blobABase64(img.blob), encoding: "base64" } });
       arbol.push({ path: img.path, mode: "100644", type: "blob", sha: b.sha });
     }
-    btn.textContent = "Guardando catálogo…";
+    rotulo.textContent = "Guardando catálogo…";
     const cat = await gh(`/repos/${REPO}/git/blobs`, { method: "POST", body: { content: serializar(PRODUCTOS), encoding: "utf-8" } });
     arbol.push({ path: "assets/js/products.js", mode: "100644", type: "blob", sha: cat.sha });
     // commit
@@ -347,7 +347,7 @@ $("btnPublicar").addEventListener("click", async () => {
   } catch (err) {
     toast("No se pudo publicar: " + err.message, true);
   }
-  btn.textContent = antes.replace(/\s+\d+$/, "");
+  rotulo.textContent = "Publicar cambios";
   btn.disabled = false;
   actualizarCambios();
 });
