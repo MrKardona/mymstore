@@ -183,7 +183,7 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
           <div class="pdp__kit-txt">
             <span class="pdp__kit-kicker">Lanzamiento · Cuida tu par desde el primer día</span>
             <a href="${KIT_ID}.html"><strong>${esc(kit.name)}</strong></a>
-            <span>${fmtCOP(kit.price)} · ${esc(kit.sizes)}</span>
+            <span>${fmtCOP(kit.price)} · espuma + cepillo <b class="pdp__kit-free">+ paño de regalo</b></span>
           </div>
           <button class="pdp__kit-add" type="button" onclick="addToCart('${KIT_ID}')">+ Agregar</button>
         </aside>` : ""}

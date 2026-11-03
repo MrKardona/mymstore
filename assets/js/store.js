@@ -22,6 +22,11 @@ const etiquetaTalla = (p) => (p.cat === "cuidado" ? "Incluye" : "Talla");
 const msgConsulta = (p) => `Hola M&M Store 👟 Quiero saber el precio y las tallas disponibles del ${p.name}.`;
 function consultar(id) { const p = byId(id); if (p) window.open(waUrl(msgConsulta(p)), "_blank", "noopener"); }
 
+// Regalo de lanzamiento: cada kit del carrito suma un paño de microfibra gratis
+const REGALO = { nombre: "Paño de microfibra", img: "assets/img/brand/regalo-pano.webp" };
+const ICONO_REGALO = `<svg class="ico-regalo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>`;
+const kitsEnCarrito = () => cart.find((i) => i.id === KIT_ID)?.qty || 0;
+
 function waUrl(message) {
   return `https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(message)}`;
 }
@@ -47,7 +52,7 @@ function addToCart(id) {
   }
   saveCart(cart);
   renderCart();
-  toast(`${p.name} agregado al carrito`);
+  toast(id === KIT_ID ? "Kit agregado · el paño de microfibra va de regalo" : `${p.name} agregado al carrito`);
   openDrawer();
 }
 
@@ -97,14 +102,26 @@ function renderCart() {
       </div>`;
     }).join("");
     const kit = byId(KIT_ID);
-    if (kit && kit.qty > 0 && !aConsultar(kit) && !cart.some((i) => i.id === KIT_ID)) {
+    const regalos = kitsEnCarrito();
+    if (regalos) {
+      box.innerHTML += `
+      <div class="ci ci--gift" role="note">
+        <img src="${BASE}${REGALO.img}" alt="${REGALO.nombre} de regalo" loading="lazy">
+        <div>
+          <span class="ci__kicker ci__kicker--gift">${ICONO_REGALO} Regalo por tu kit</span>
+          <h4>${REGALO.nombre}${regalos > 1 ? ` x${regalos}` : ""}</h4>
+          <div class="ci__price"><b class="ci__gratis">GRATIS</b> · se agrega solo a tu pedido</div>
+        </div>
+      </div>`;
+    }
+    if (kit && kit.qty > 0 && !aConsultar(kit) && !regalos) {
       box.innerHTML += `
       <div class="ci ci--upsell">
         <img src="${BASE}assets/img/thumbs/${KIT_ID}.webp" alt="${kit.name}" loading="lazy">
         <div>
           <span class="ci__kicker">Cuídalos desde el día uno</span>
           <h4>${kit.name}</h4>
-          <div class="ci__price">${fmtCOP(kit.price)}</div>
+          <div class="ci__price">${fmtCOP(kit.price)} <span class="ci__plus">+ paño de regalo</span></div>
         </div>
         <button class="ci__add" aria-label="Agregar ${kit.name}" onclick="addToCart('${KIT_ID}')">+ Agregar</button>
       </div>`;
@@ -120,6 +137,8 @@ function checkout() {
     const p = byId(i.id);
     return `• ${p.name} (${p.sizes}) x${i.qty} — ${fmtCOP(p.price * i.qty)}`;
   });
+  const regalos = kitsEnCarrito();
+  if (regalos) lines.push(`🎁 De regalo por el kit: ${REGALO.nombre} x${regalos} — GRATIS`);
   const msg = `Hola ${STORE.name} 👟 Quiero este pedido:\n\n${lines.join("\n")}\n\nTotal: ${fmtCOP(cartTotal())}\n\n¿Está disponible para entrega?`;
   window.open(waUrl(msg), "_blank", "noopener");
 }
