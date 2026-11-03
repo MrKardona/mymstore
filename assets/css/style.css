@@ -821,3 +821,78 @@ html.lenis, html.lenis body { height: auto; }
 
 /* util */
 .hide { display: none !important; }
+
+/* ---------- Precio a consultar ---------- */
+.card__price--consulta { font-size: 0.86rem; color: var(--blue-soft); letter-spacing: 0.01em; }
+.card__add--wa { background: #25d366; color: #06281a; }
+.card__add--wa:hover { background: #1fbf5b; }
+.pdp__price--consulta { font-size: 1.5rem; color: var(--blue-soft); }
+
+/* ---------- Kit de limpieza: banner del home ---------- */
+.kitbanner {
+  max-width: 1180px; margin: clamp(30px, 6vw, 70px) auto; padding: 0 24px;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(26px, 5vw, 64px); align-items: center;
+}
+.kitbanner__media { position: relative; display: block; aspect-ratio: 1; }
+.kitbanner__media img { border-radius: 22px; border: 1px solid var(--line); box-shadow: var(--shadow-pop); }
+.kitbanner__media > img:first-child { width: 82%; }
+.kitbanner__uso {
+  position: absolute; right: 0; bottom: 0; width: 46%;
+  border: 4px solid var(--ink) !important; rotate: 4deg;
+  transition: rotate 0.5s cubic-bezier(0.16, 1, 0.3, 1), scale 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.kitbanner__media:hover .kitbanner__uso { rotate: 0deg; scale: 1.04; }
+.kitbanner__kicker { color: var(--orange); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; }
+.kitbanner__texto h2 { font-family: var(--font-display); text-transform: uppercase; font-size: clamp(2.4rem, 6vw, 4.6rem); line-height: 0.95; margin: 14px 0 18px; }
+.kitbanner__texto h2 em { font-style: normal; color: var(--blue); }
+.kitbanner__texto p { color: var(--cream-dim); line-height: 1.75; max-width: 46ch; }
+.kitbanner__precio { font-family: var(--font-display); font-size: 2.6rem; color: var(--cream) !important; margin: 18px 0 22px; letter-spacing: 0.02em; }
+.kitbanner__cta { display: flex; gap: 10px; flex-wrap: wrap; }
+@media (max-width: 860px) {
+  .kitbanner { grid-template-columns: 1fr; }
+  .kitbanner__media { max-width: 460px; width: 100%; margin: 0 auto; }
+}
+
+/* ---------- Kit: venta cruzada en cada producto y en el carrito ---------- */
+.pdp__kit {
+  margin-top: 22px; display: grid; grid-template-columns: 76px 1fr auto; gap: 14px; align-items: center;
+  border: 1px solid rgba(245, 130, 32, 0.45); border-radius: 16px; padding: 12px;
+  background: linear-gradient(120deg, rgba(245, 130, 32, 0.1), rgba(54, 169, 225, 0.06));
+}
+.pdp__kit-img img { width: 76px; height: 76px; border-radius: 10px; object-fit: cover; background: #fff; }
+.pdp__kit-txt { display: grid; gap: 3px; font-size: 0.86rem; }
+.pdp__kit-txt strong { font-weight: 800; }
+.pdp__kit-txt span:last-child { color: var(--cream-dim); }
+.pdp__kit-kicker { color: var(--orange); font-size: 0.66rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.pdp__kit-add, .ci__add {
+  background: var(--orange); color: var(--ink); font-weight: 900; font-size: 0.8rem;
+  padding: 10px 14px; border-radius: 10px; white-space: nowrap; transition: transform 0.2s, background 0.2s;
+}
+.pdp__kit-add:hover, .ci__add:hover { background: var(--orange-hot); transform: translateY(-2px); }
+.ci--upsell { border-style: dashed; border-color: rgba(245, 130, 32, 0.55); }
+.ci--upsell img { object-fit: cover; padding: 0; }
+.ci__kicker { display: block; color: var(--orange); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 2px; }
+@media (max-width: 420px) { .pdp__kit { grid-template-columns: 60px 1fr; } .pdp__kit-img img { width: 60px; height: 60px; } .pdp__kit-add { grid-column: 1 / -1; } }
+
+/* ---------- Kit: cómo se usa (página del kit) ---------- */
+.kitland { margin-top: clamp(50px, 8vw, 90px); }
+.kitland__head { max-width: 640px; margin-bottom: 30px; }
+.kitland__kicker { color: var(--orange); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; }
+.kitland__head h2 { font-family: var(--font-display); text-transform: uppercase; font-size: clamp(2rem, 5vw, 3.4rem); line-height: 0.98; margin: 10px 0 14px; }
+.kitland__head h2 em { font-style: normal; color: var(--blue); }
+.kitland__head p { color: var(--cream-dim); line-height: 1.7; }
+.kitland__pasos { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.kitland__paso { display: grid; gap: 14px; align-content: start; }
+.kitland__paso:nth-child(2) { margin-top: 36px; }
+.kitland__paso img { border-radius: 18px; border: 1px solid var(--line); aspect-ratio: 1; object-fit: cover; }
+.kitland__num { font-family: var(--font-display); color: var(--orange); font-size: 1.6rem; }
+.kitland__paso h3 { font-weight: 900; font-size: 1.05rem; margin: 2px 0 6px; }
+.kitland__paso p { color: var(--cream-dim); font-size: 0.9rem; line-height: 1.6; }
+.kitland__nota { color: var(--cream-dim); font-size: 0.76rem; margin-top: 22px; }
+.kitland__cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+@media (max-width: 760px) {
+  .kitland__pasos { grid-template-columns: 1fr; }
+  .kitland__paso:nth-child(2) { margin-top: 0; }
+  .kitland__paso { grid-template-columns: 120px 1fr; align-items: center; }
+}

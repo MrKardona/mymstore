@@ -14,6 +14,14 @@ const BASE = location.pathname.includes("/producto/") ? "../" : "";
 
 const fmtCOP = (n) => "$" + n.toLocaleString("es-CO");
 
+// Precio 0 = "precio a consultar": no entra al carrito, se pregunta por WhatsApp
+const KIT_ID = "kit-limpieza-tenis";
+const aConsultar = (p) => !(p.price > 0);
+const precioTxt = (p) => (aConsultar(p) ? "Precio a consultar" : fmtCOP(p.price));
+const etiquetaTalla = (p) => (p.cat === "cuidado" ? "Incluye" : "Talla");
+const msgConsulta = (p) => `Hola M&M Store 👟 Quiero saber el precio y las tallas disponibles del ${p.name}.`;
+function consultar(id) { const p = byId(id); if (p) window.open(waUrl(msgConsulta(p)), "_blank", "noopener"); }
+
 function waUrl(message) {
   return `https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(message)}`;
 }
@@ -29,6 +37,7 @@ const byId = (id) => (typeof PRODUCTS !== "undefined" ? PRODUCTS.find((p) => p.i
 function addToCart(id) {
   const p = byId(id);
   if (!p) return;
+  if (aConsultar(p)) { consultar(id); return; }
   const item = cart.find((i) => i.id === id);
   if (item) {
     if (item.qty >= p.qty) { toast(`Solo quedan ${p.qty} unidad(es) de este par`); return; }
@@ -87,6 +96,19 @@ function renderCart() {
         <button class="ci__rm" aria-label="Eliminar del carrito" onclick="setQty('${p.id}', 0)">✕</button>
       </div>`;
     }).join("");
+    const kit = byId(KIT_ID);
+    if (kit && kit.qty > 0 && !aConsultar(kit) && !cart.some((i) => i.id === KIT_ID)) {
+      box.innerHTML += `
+      <div class="ci ci--upsell">
+        <img src="${BASE}assets/img/thumbs/${KIT_ID}.webp" alt="${kit.name}" loading="lazy">
+        <div>
+          <span class="ci__kicker">Cuídalos desde el día uno</span>
+          <h4>${kit.name}</h4>
+          <div class="ci__price">${fmtCOP(kit.price)}</div>
+        </div>
+        <button class="ci__add" aria-label="Agregar ${kit.name}" onclick="addToCart('${KIT_ID}')">+ Agregar</button>
+      </div>`;
+    }
   }
   const totalEl = document.getElementById("cartTotal");
   if (totalEl) totalEl.textContent = fmtCOP(cartTotal());
@@ -150,7 +172,8 @@ const grid = document.getElementById("productGrid");
 
 function cardHTML(p) {
   const agotado = p.qty <= 0;
-  const few = p.qty === 1;
+  const consulta = aConsultar(p);
+  const few = p.qty === 1 && !consulta;
   const tag = agotado ? `<span class="card__tag card__tag--out">Agotado</span>`
     : p.tag ? `<span class="card__tag">${p.tag}</span>`
     : (few ? `<span class="card__tag card__tag--few">Última unidad</span>` : "");
@@ -163,10 +186,12 @@ function cardHTML(p) {
     <div class="card__body">
       <span class="card__brand">${p.brand}</span>
       <a href="${BASE}producto/${p.id}.html"><h3 class="card__name">${p.name}</h3></a>
-      <span class="card__sizes">Talla: ${p.sizes}</span>
+      <span class="card__sizes">${etiquetaTalla(p)}: ${p.sizes}</span>
       <div class="card__footer">
-        <div class="card__price">${fmtCOP(p.price)}</div>
-        ${p.qty <= 0 ? "" : `<button class="card__add" aria-label="Agregar ${p.name} al carrito" onclick="addToCart('${p.id}')">+</button>`}
+        <div class="card__price${consulta ? " card__price--consulta" : ""}">${precioTxt(p)}</div>
+        ${p.qty <= 0 ? "" : consulta
+          ? `<button class="card__add card__add--wa" aria-label="Consultar precio de ${p.name} por WhatsApp" onclick="consultar('${p.id}')"><svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg></button>`
+          : `<button class="card__add" aria-label="Agregar ${p.name} al carrito" onclick="addToCart('${p.id}')">+</button>`}
       </div>
     </div>
   </article>`;
@@ -218,6 +243,14 @@ document.querySelectorAll(".chip").forEach((chip) => {
 });
 document.getElementById("search")?.addEventListener("input", (e) => { searchQ = e.target.value; renderGrid(); });
 
+/* ---------- Banner del kit: precio en vivo; se oculta si se agota ---------- */
+const kitBanner = document.getElementById("kit");
+if (kitBanner) {
+  const kit = byId(KIT_ID);
+  if (!kit || kit.qty <= 0) kitBanner.hidden = true;
+  else kitBanner.querySelector("[data-kit-precio]").textContent = precioTxt(kit);
+}
+
 /* ---------- Drops destacados ---------- */
 const dropsGrid = document.getElementById("dropsGrid");
 if (dropsGrid && typeof PRODUCTS !== "undefined") {
@@ -232,7 +265,7 @@ if (dropsGrid && typeof PRODUCTS !== "undefined") {
       <div class="drop__body">
         <h3>${p.name}</h3>
         <p>${p.desc}</p>
-        <div class="drop__price">${fmtCOP(p.price)}</div>
+        <div class="drop__price">${precioTxt(p)}</div>
         <a class="btn btn--fire" href="producto/${p.id}.html">Lo quiero <span class="btn__arrow">→</span></a>
       </div>
     </article>`;

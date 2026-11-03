@@ -6,5 +6,6 @@ const CATEGORIAS = [
   { id: "yeezy", nombre: "Yeezy" },
   { id: "lifestyle", nombre: "Lifestyle" },
   { id: "running", nombre: "Running" },
-  { id: "guayos", nombre: "Guayos" }
+  { id: "guayos", nombre: "Guayos" },
+  { id: "cuidado", nombre: "Cuidado de tenis" }
 ];

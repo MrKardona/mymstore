@@ -389,7 +389,7 @@ $("btnGuardarProducto").addEventListener("click", async () => {
   const nombre = $("fNombre").value.trim();
   const precio = parseInt($("fPrecio").value || "0", 10);
   if (!nombre) return toast("Ponle nombre al producto", true);
-  if (!precio) return toast("Ponle precio", true);
+  if ($("fPrecio").value === "" || precio < 0) return toast("Ponle precio (0 = precio a consultar)", true);
   if (!editandoId && fotosNuevas.length === 0) return toast("Sube al menos una foto", true);
 
   let p;

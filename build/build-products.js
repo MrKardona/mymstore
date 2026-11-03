@@ -16,6 +16,7 @@ vm.runInContext(fs.readFileSync(path.join(ROOT, "assets/js/products.js"), "utf8"
 const PRODUCTS = ctx.PRODUCTS;
 
 const fmtCOP = (n) => "$" + n.toLocaleString("es-CO");
+const KIT_ID = "kit-limpieza-tenis";
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 
 // Categorías desde assets/js/categories.js (administrables desde /admin)
@@ -38,10 +39,24 @@ function productPage(p) {
   const img = `${SITE}/assets/img/products/${p.img}`;
   const views = galleryViews(p.id);
   const tiene3d = fs.existsSync(path.join(ROOT, "assets/3d", p.id + ".glb"));
-  const title = `${p.name} — ${fmtCOP(p.price)} | M&M Store Medellín`;
-  const desc = `${p.desc} Talla ${p.sizes}. ${fmtCOP(p.price)} COP. 100% original, entrega inmediata en Medellín y envíos a toda Colombia.`;
-  const few = p.qty === 1;
+  // precio 0 = "precio a consultar" por WhatsApp
+  const consulta = !(p.price > 0);
+  const esKit = p.cat === "cuidado";
+  const title = consulta ? `${p.name} | Precio a consultar | M&M Store Medellín` : `${p.name} — ${fmtCOP(p.price)} | M&M Store Medellín`;
+  const desc = consulta
+    ? `${p.desc} Consulta precio y tallas por WhatsApp. 100% original, entrega inmediata en Medellín y envíos a toda Colombia.`
+    : esKit
+    ? `${p.desc} Incluye ${p.sizes}. ${fmtCOP(p.price)} COP. Entrega inmediata en Medellín y envíos a toda Colombia.`
+    : `${p.desc} Talla ${p.sizes}. ${fmtCOP(p.price)} COP. 100% original, entrega inmediata en Medellín y envíos a toda Colombia.`;
+  const few = p.qty === 1 && !consulta;
   const agotado = p.qty <= 0;
+  const landingFile = path.join(__dirname, "landing", p.id + ".html");
+  const landing = fs.existsSync(landingFile) ? fs.readFileSync(landingFile, "utf8").replace(/\{\{precio\}\}/g, fmtCOP(p.price)) : "";
+  const kit = PRODUCTS.find((x) => x.id === KIT_ID);
+  const venderKit = !esKit && kit && kit.qty > 0 && kit.price > 0;
+  const msgWa = consulta
+    ? `Hola M&M Store 👟 Quiero saber el precio y las tallas disponibles del ${p.name}.`
+    : `Hola M&M Store 👟 Quiero el ${p.name} (${p.sizes}) por ${fmtCOP(p.price)}. ¿Está disponible?`;
 
   const jsonld = {
     "@context": "https://schema.org",
@@ -51,15 +66,15 @@ function productPage(p) {
     description: desc,
     sku: p.id,
     brand: { "@type": "Brand", name: p.brand },
-    offers: {
-      "@type": "Offer",
-      url,
-      priceCurrency: "COP",
-      price: p.price,
-      availability: agotado ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
-      itemCondition: "https://schema.org/NewCondition",
-      seller: { "@type": "Organization", name: "M&M Store" },
-    },
+  };
+  if (!consulta) jsonld.offers = {
+    "@type": "Offer",
+    url,
+    priceCurrency: "COP",
+    price: p.price,
+    availability: agotado ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+    itemCondition: "https://schema.org/NewCondition",
+    seller: { "@type": "Organization", name: "M&M Store" },
   };
   const crumbs = {
     "@context": "https://schema.org",
@@ -141,15 +156,17 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
       <div>
         <p class="pdp__brand">${esc(p.brand)}${CAT_LABEL[p.cat] && !CAT_LABEL[p.cat].toLowerCase().includes(p.brand.toLowerCase()) ? " · " + CAT_LABEL[p.cat] : ""}</p>
         <h1>${esc(p.name)}</h1>
-        <p class="pdp__price">${fmtCOP(p.price)} <small>COP · Precio final</small></p>
-        <p class="pdp__stock${agotado ? " pdp__stock--out" : few ? " pdp__stock--few" : ""}"><span class="dot"></span> ${agotado ? "Agotado por ahora" : few ? "¡Última unidad disponible!" : `${p.qty} unidades disponibles`}</p>
+        ${consulta
+          ? `<p class="pdp__price pdp__price--consulta">Precio a consultar <small>Te respondemos al instante por WhatsApp</small></p>`
+          : `<p class="pdp__price">${fmtCOP(p.price)} <small>COP · Precio final</small></p>`}
+        <p class="pdp__stock${agotado ? " pdp__stock--out" : few ? " pdp__stock--few" : ""}"><span class="dot"></span> ${agotado ? "Agotado por ahora" : consulta ? "Tallas y disponibilidad por WhatsApp" : esKit ? "Disponible · entrega inmediata" : few ? "¡Última unidad disponible!" : `${p.qty} unidades disponibles`}</p>
         <p class="pdp__desc">${esc(p.desc)}</p>
         <div class="pdp__row">
-          ${agotado ? "" : `<button class="btn btn--fire magnetic" onclick="addToCart('${p.id}')">Agregar al carrito</button>`}
-          <a href="#" class="btn btn--wa magnetic" data-wa="Hola M&M Store 👟 Quiero el ${esc(p.name)} (${esc(p.sizes)}) por ${fmtCOP(p.price)}. ¿Está disponible?">${agotado ? "Avísame cuando vuelva" : "Comprar ya por WhatsApp"} <span class="btn__arrow">→</span></a>
+          ${agotado || consulta ? "" : `<button class="btn btn--fire magnetic" onclick="addToCart('${p.id}')">Agregar al carrito</button>`}
+          <a href="#" class="btn btn--wa magnetic" data-wa="${esc(msgWa)}">${agotado ? "Avísame cuando vuelva" : consulta ? "Consultar precio por WhatsApp" : "Comprar ya por WhatsApp"} <span class="btn__arrow">→</span></a>
         </div>
         <dl class="pdp__meta">
-          <div><dt>Talla</dt><dd>${esc(p.sizes)}</dd></div>
+          <div><dt>${esKit ? "Incluye" : "Talla"}</dt><dd>${esc(p.sizes)}</dd></div>
           <div><dt>Marca</dt><dd>${esc(p.brand)}</dd></div>
           <div><dt>Condición</dt><dd>Nuevo · 100% original</dd></div>
           <div><dt>Entrega Medellín</dt><dd>Inmediata (mismo día)</dd></div>
@@ -159,10 +176,19 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
         <div class="pdp__ship">
           <p><span class="pdp__tick">→</span> Entrega inmediata en Medellín y área metropolitana</p>
           <p><span class="pdp__tick">→</span> Envíos a toda Colombia con transportadora</p>
-          <p><span class="pdp__tick">→</span> Verificación de autenticidad al recibir</p>
-        </div>
+          <p><span class="pdp__tick">→</span> ${esKit ? "Espuma y cepillo con la marca M&amp;M Store" : "Verificación de autenticidad al recibir"}</p>
+        </div>${venderKit ? `
+        <aside class="pdp__kit">
+          <a class="pdp__kit-img" href="${KIT_ID}.html"><img src="../assets/img/thumbs/${KIT_ID}.webp" alt="${esc(kit.name)}" loading="lazy" width="96" height="96"></a>
+          <div class="pdp__kit-txt">
+            <span class="pdp__kit-kicker">Lanzamiento · Cuida tu par desde el primer día</span>
+            <a href="${KIT_ID}.html"><strong>${esc(kit.name)}</strong></a>
+            <span>${fmtCOP(kit.price)} · ${esc(kit.sizes)}</span>
+          </div>
+          <button class="pdp__kit-add" type="button" onclick="addToCart('${KIT_ID}')">+ Agregar</button>
+        </aside>` : ""}
       </div>
-    </div>
+    </div>${landing}
     <section class="pdp__related">
       <h2>También te pueden gustar</h2>
       <div class="grid" id="relatedGrid"></div>
@@ -252,6 +278,7 @@ const idxPath = path.join(ROOT, "index.html");
 let idx = fs.readFileSync(idxPath, "utf8");
 idx = idx
   .replace(/assets\/css\/style\.css\?v=[^"]+/, "assets/css/style.css?v=" + VER)
+  .replace(/assets\/js\/categories\.js\?v=[^"]+/, "assets/js/categories.js?v=" + VER)
   .replace(/assets\/js\/products\.js\?v=[^"]+/, "assets/js/products.js?v=" + VER)
   .replace(/assets\/js\/gallery\.js\?v=[^"]+/, "assets/js/gallery.js?v=" + VER)
   .replace(/assets\/js\/store\.js\?v=[^"]+/, "assets/js/store.js?v=" + VER);

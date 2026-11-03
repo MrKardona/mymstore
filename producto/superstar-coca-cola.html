@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;800;900&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/css/style.css?v=tnwsz3">
+  <link rel="stylesheet" href="../assets/css/style.css?v=tnwtwj">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"Superstar II x Coca-Cola","image":["https://mymstore.co/assets/img/products/superstar-coca-cola.webp","https://mymstore.co/assets/img/products/gallery/superstar-coca-cola-2.webp","https://mymstore.co/assets/img/products/gallery/superstar-coca-cola-3.webp","https://mymstore.co/assets/img/products/gallery/superstar-coca-cola-4.webp","https://mymstore.co/assets/img/products/gallery/superstar-coca-cola-5.webp"],"description":"Superstar II en colaboración con Coca-Cola. Clásico de clásicos con sabor retro. Talla 8.5 US Men. $559.900 COP. 100% original, entrega inmediata en Medellín y envíos a toda Colombia.","sku":"superstar-coca-cola","brand":{"@type":"Brand","name":"adidas Originals"},"offers":{"@type":"Offer","url":"https://mymstore.co/producto/superstar-coca-cola.html","priceCurrency":"COP","price":559900,"availability":"https://schema.org/InStock","itemCondition":"https://schema.org/NewCondition","seller":{"@type":"Organization","name":"M&M Store"}}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":"https://mymstore.co/"},{"@type":"ListItem","position":2,"name":"Catálogo","item":"https://mymstore.co/#catalogo"},{"@type":"ListItem","position":3,"name":"Superstar II x Coca-Cola","item":"https://mymstore.co/producto/superstar-coca-cola.html"}]}</script>
 </head>
@@ -66,7 +66,7 @@
         <p class="pdp__desc">Superstar II en colaboración con Coca-Cola. Clásico de clásicos con sabor retro.</p>
         <div class="pdp__row">
           <button class="btn btn--fire magnetic" onclick="addToCart('superstar-coca-cola')">Agregar al carrito</button>
-          <a href="#" class="btn btn--wa magnetic" data-wa="Hola M&M Store 👟 Quiero el Superstar II x Coca-Cola (8.5 US Men) por $559.900. ¿Está disponible?">Comprar ya por WhatsApp <span class="btn__arrow">→</span></a>
+          <a href="#" class="btn btn--wa magnetic" data-wa="Hola M&amp;M Store 👟 Quiero el Superstar II x Coca-Cola (8.5 US Men) por $559.900. ¿Está disponible?">Comprar ya por WhatsApp <span class="btn__arrow">→</span></a>
         </div>
         <dl class="pdp__meta">
           <div><dt>Talla</dt><dd>8.5 US Men</dd></div>
@@ -81,6 +81,15 @@
           <p><span class="pdp__tick">→</span> Envíos a toda Colombia con transportadora</p>
           <p><span class="pdp__tick">→</span> Verificación de autenticidad al recibir</p>
         </div>
+        <aside class="pdp__kit">
+          <a class="pdp__kit-img" href="kit-limpieza-tenis.html"><img src="../assets/img/thumbs/kit-limpieza-tenis.webp" alt="Kit de Limpieza de Tenis M&amp;M Store" loading="lazy" width="96" height="96"></a>
+          <div class="pdp__kit-txt">
+            <span class="pdp__kit-kicker">Lanzamiento · Cuida tu par desde el primer día</span>
+            <a href="kit-limpieza-tenis.html"><strong>Kit de Limpieza de Tenis M&amp;M Store</strong></a>
+            <span>$30.000 · Espuma limpiadora 150 ml + cepillo de madera</span>
+          </div>
+          <button class="pdp__kit-add" type="button" onclick="addToCart('kit-limpieza-tenis')">+ Agregar</button>
+        </aside>
       </div>
     </div>
     <section class="pdp__related">
@@ -110,10 +119,10 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" defer></script>
-  <script src="../assets/js/categories.js?v=tnwsz3"></script>
-  <script src="../assets/js/products.js?v=tnwsz3"></script>
-  <script src="../assets/js/gallery.js?v=tnwsz3"></script>
-  <script src="../assets/js/store.js?v=tnwsz3" defer></script>
+  <script src="../assets/js/categories.js?v=tnwtwj"></script>
+  <script src="../assets/js/products.js?v=tnwtwj"></script>
+  <script src="../assets/js/gallery.js?v=tnwtwj"></script>
+  <script src="../assets/js/store.js?v=tnwtwj" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var rel = PRODUCTS.filter(function (x) { return x.cat === "colabs" && x.id !== "superstar-coca-cola"; }).slice(0, 4);
