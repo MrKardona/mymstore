@@ -5,13 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Panel M&M Store</title>
   <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0b1420">
   <link rel="icon" type="image/png" sizes="48x48" href="../assets/img/brand/favicon-48.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css?v=3">
+  <link rel="stylesheet" href="admin.css?v=4">
 </head>
 <body>
   <!-- Pantalla de bloqueo -->
@@ -19,10 +20,10 @@
     <div class="candado__caja">
       <img src="../assets/img/brand/logo-t.webp" alt="M&M Store" width="84" height="84">
       <h2>Panel M&M Store</h2>
-      <p>Ingresa tu PIN</p>
-      <input type="password" id="pinInput" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••">
+      <p id="candadoMsg">Ingresa tu contraseña</p>
+      <input type="password" id="pinInput" autocomplete="current-password" placeholder="Contraseña">
       <button class="btn" id="btnPin">Entrar</button>
-      <p class="candado__error hide" id="pinError">PIN incorrecto</p>
+      <p class="candado__error hide" id="pinError">Contraseña incorrecta</p>
     </div>
   </div>
 
@@ -32,29 +33,30 @@
       <h1>Panel M&M Store</h1>
       <p id="estado">Cargando inventario…</p>
     </div>
+    <button class="btn btn--sec btn--chico" id="btnSalir" title="Cierra la sesión en este dispositivo">Salir</button>
     <button class="btn btn--publicar" id="btnPublicar" disabled><span id="pubTxt">Publicar cambios</span> <span id="nCambios" class="pill hide">0</span></button>
   </header>
 
-  <!-- Clave de acceso -->
+  <!-- Clave de GitHub (solo para renovarla) -->
   <section class="card" id="cardClave">
     <div class="clave">
-      <label for="token"><strong>Clave de acceso</strong> (se guarda solo en este navegador)</label>
-      <div class="clave__row">
-        <input type="password" id="token" placeholder="github_pat_…" autocomplete="off">
-        <button class="btn" id="btnGuardarClave">Conectar</button>
-      </div>
       <p class="ok hide" id="claveOk">✓ Conectado — puedes publicar cambios</p>
-      <p class="clave__pin"><a href="#" id="btnCambiarPin">Cambiar PIN de entrada</a> · <a href="#" id="btnAccesoUni">Activar contraseña de acceso (todos los dispositivos)</a></p>
+      <p class="clave__pin"><a href="#" id="btnAccesoUni">Cambiar contraseña de acceso</a></p>
       <details>
-        <summary>¿Cómo creo mi clave? (una sola vez, 2 minutos)</summary>
+        <summary>Renovar la clave de GitHub (solo cuando venza)</summary>
+        <div class="clave__row">
+          <input type="password" id="token" placeholder="github_pat_…" autocomplete="off">
+          <button class="btn" id="btnGuardarClave">Conectar</button>
+        </div>
         <ol>
           <li>Entra a <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a> (inicia sesión con la cuenta <strong>MrKardona</strong>).</li>
-          <li>En <em>Token name</em> pon: <code>panel-mymstore</code>. En <em>Expiration</em> elige <strong>No expiration</strong> (o 1 año).</li>
+          <li>En <em>Token name</em> pon: <code>panel-mymstore</code>. En <em>Expiration</em> elige 1 año.</li>
           <li>En <em>Repository access</em> elige <strong>Only select repositories</strong> → marca <code>mymstore</code>.</li>
           <li>En <em>Permissions → Repository permissions</em> busca <strong>Contents</strong> y ponlo en <strong>Read and write</strong>.</li>
-          <li>Botón verde <em>Generate token</em>, copia la clave que empieza por <code>github_pat_</code> y pégala aquí arriba.</li>
+          <li>Botón verde <em>Generate token</em>, copia la clave que empieza por <code>github_pat_</code>, pégala arriba y pulsa <strong>Conectar</strong>.</li>
+          <li>Pulsa <strong>Cambiar contraseña de acceso</strong> para guardarla en todos los dispositivos.</li>
         </ol>
-        <p>Esa clave es tu contraseña: no la compartas. Si la pierdes, generas otra igual.</p>
+        <p>Esa clave es como la llave de la tienda: no la compartas ni la mandes por chat.</p>
       </details>
     </div>
   </section>
@@ -64,13 +66,8 @@
     <input type="search" id="buscar" placeholder="Buscar producto…">
     <select id="filtroCat">
       <option value="all">Todas las categorías</option>
-      <option value="nike">Nike · Jordan</option>
-      <option value="colabs">Colabs</option>
-      <option value="yeezy">Yeezy</option>
-      <option value="lifestyle">Lifestyle</option>
-      <option value="running">Running</option>
-      <option value="guayos">Guayos</option>
     </select>
+    <button class="btn btn--sec btn--chico hide" id="btnDeshacer">Descartar cambios</button>
     <button class="btn btn--nuevo" id="btnNuevo">+ Nuevo producto</button>
   </section>
 
@@ -82,53 +79,78 @@
       </thead>
       <tbody id="tbody"></tbody>
     </table>
-    <p class="nota">Cambia precio, tallas o cantidad directo en la tabla. Cantidad 0 = se muestra <strong>Agotado</strong> en la tienda. Al terminar pulsa <strong>Publicar cambios</strong>.</p>
+    <p class="nota">Cambia precio, tallas o cantidad directo en la tabla. Toca un producto para editar todo: fotos, nombre, descripción y si se muestra en la tienda. Al terminar pulsa <strong>Publicar cambios</strong>.</p>
   </section>
 
-  <!-- Formulario nuevo / editar -->
+  <!-- Ficha del producto: nuevo / editar / duplicar -->
   <div class="velo hide" id="velo"></div>
-  <section class="form hide" id="form" aria-label="Formulario de producto">
+  <section class="form hide" id="form" role="dialog" aria-modal="true" aria-labelledby="formTitulo">
     <div class="form__head">
       <h2 id="formTitulo">Nuevo producto</h2>
+      <a class="form__ver hide" id="verTienda" href="#" target="_blank" rel="noopener">Ver en la tienda ↗</a>
       <button class="form__cerrar" id="btnCerrarForm" aria-label="Cerrar">✕</button>
     </div>
+
+    <div class="fotos" id="fotos">
+      <div class="fotos__head">
+        <p><strong>Fotos</strong> <span id="fotosN"></span></p>
+        <p class="fotos__ayuda">La primera es la principal. Toca una foto para verla en grande.</p>
+      </div>
+      <div class="fotos__grid" id="fotosGrid"></div>
+      <input type="file" id="fFotos" accept="image/*" multiple hidden>
+    </div>
+
     <div class="form__grid">
-      <label>Nombre <input id="fNombre" placeholder="Nike Air Max 90 Blanco"></label>
-      <label>Marca <input id="fMarca" placeholder="Nike" list="marcas">
+      <label>Nombre <input id="fNombre" maxlength="90" placeholder="Nike Air Max 90 Blanco"></label>
+      <label>Marca <input id="fMarca" maxlength="40" placeholder="Nike" list="marcas">
         <datalist id="marcas"><option>Nike</option><option>Jordan</option><option>adidas Originals</option><option>adidas Running</option><option>adidas Football</option><option>Yeezy</option></datalist>
       </label>
-      <label>Categoría
-        <select id="fCat">
-          <option value="nike">Nike · Jordan</option>
-          <option value="colabs">Colabs</option>
-          <option value="yeezy">Yeezy</option>
-          <option value="lifestyle">Lifestyle</option>
-          <option value="running">Running</option>
-          <option value="guayos">Guayos</option>
-        </select>
+      <label>Categoría <select id="fCat"></select></label>
+      <label>Precio (COP) · 0 = a consultar <input id="fPrecio" type="number" inputmode="numeric" min="0" step="1000" placeholder="450000"></label>
+      <label>Tallas <input id="fTallas" maxlength="120" placeholder="8.5 US Men"></label>
+      <label>Cantidad · 0 = agotado <input id="fCantidad" type="number" inputmode="numeric" min="0" step="1" value="1"></label>
+      <label>Etiqueta (opcional) <input id="fTag" maxlength="24" placeholder="Nike, Hype, Oferta…"></label>
+      <label class="switch">
+        <input type="checkbox" id="fVisible" checked>
+        <span>Mostrar en la tienda <small>Apágalo para esconderlo sin borrarlo</small></span>
       </label>
-      <label>Precio (COP) · 0 = a consultar <input id="fPrecio" type="number" min="0" step="1000" placeholder="450000"></label>
-      <label>Tallas <input id="fTallas" placeholder="8.5 US Men"></label>
-      <label>Cantidad <input id="fCantidad" type="number" min="0" step="1" value="1"></label>
-      <label>Etiqueta (opcional) <input id="fTag" placeholder="Nike, Hype, Oferta…"></label>
-      <label class="form__desc">Descripción <textarea id="fDesc" rows="2" placeholder="Una frase que venda el par."></textarea></label>
-    </div>
-    <div class="fotos">
-      <p><strong>Fotos</strong> — la primera será la principal. Se recortan y optimizan solas.</p>
-      <label class="fotos__drop" id="drop">
-        <input type="file" id="fFotos" accept="image/*" multiple hidden>
-        Arrastra las fotos aquí o <u>toca para elegirlas</u>
+      <label class="form__desc">Descripción <span class="form__cuenta" id="descN"></span>
+        <textarea id="fDesc" rows="4" maxlength="600" placeholder="Una o dos frases que vendan el par: colorway, materiales, con qué combina."></textarea>
       </label>
-      <div class="fotos__previews" id="previews"></div>
     </div>
+
+    <div class="form__extra">
+      <button class="btn btn--sec btn--chico" id="btnDuplicar" title="Crea otro producto con los mismos datos y fotos">Duplicar producto</button>
+      <button class="btn btn--sec btn--chico btn--peligro" id="btnEliminarForm">Eliminar producto</button>
+    </div>
+
     <div class="form__acciones">
       <button class="btn btn--sec" id="btnCancelar">Cancelar</button>
       <button class="btn" id="btnGuardarProducto">Guardar en la lista</button>
     </div>
   </section>
 
+  <!-- Visor de fotos -->
+  <div class="visor hide" id="visor" role="dialog" aria-modal="true" aria-label="Foto en grande">
+    <div class="visor__top">
+      <span id="visorN">1 / 1</span>
+      <button class="form__cerrar" id="visorCerrar" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="visor__img">
+      <img id="visorImg" src="data:," alt="">
+      <button class="visor__nav visor__nav--ant" id="visorAnt" aria-label="Foto anterior">‹</button>
+      <button class="visor__nav visor__nav--sig" id="visorSig" aria-label="Foto siguiente">›</button>
+    </div>
+    <div class="visor__acc">
+      <button class="btn btn--sec" id="visorIzq">← Mover</button>
+      <button class="btn" id="visorPrincipal">Usar como principal</button>
+      <button class="btn btn--sec" id="visorDer">Mover →</button>
+      <button class="btn btn--sec btn--peligro" id="visorQuitar">Quitar foto</button>
+    </div>
+  </div>
+
   <div class="toast hide" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="admin.js?v=9"></script>
+  <script src="admin.js?v=10"></script>
 </body>
 </html>

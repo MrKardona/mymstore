@@ -250,6 +250,11 @@ fs.mkdirSync(outDir, { recursive: true });
 for (const p of PRODUCTS) {
   fs.writeFileSync(path.join(outDir, `${p.id}.html`), productPage(p));
 }
+// Quitar páginas de productos eliminados u ocultos desde el panel (PRODUCTS_OCULTOS)
+const vigentes = new Set(PRODUCTS.map((p) => `${p.id}.html`));
+for (const f of fs.readdirSync(outDir)) {
+  if (f.endsWith(".html") && !vigentes.has(f)) fs.unlinkSync(path.join(outDir, f));
+}
 
 // sitemap.xml
 const today = new Date().toISOString().slice(0, 10);
