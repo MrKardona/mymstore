@@ -10,7 +10,10 @@
 
 const REPO = "MrKardona/mymstore";
 const RAMA = "main";
-const RAW = `https://raw.githubusercontent.com/${REPO}/${RAMA}`;
+const RAW_REPO = `https://raw.githubusercontent.com/${REPO}`;
+// raw.githubusercontent guarda /main hasta 5 min (ignora ?t=), así que se lee por el
+// commit exacto más reciente: esa dirección nunca devuelve una versión vieja
+let RAW = `${RAW_REPO}/${RAMA}`;
 const BLOQUEO_MIN = 20; // minutos sin uso antes de volver a pedir la contraseña
 
 /* ---------- Acceso: la clave de GitHub viaja cifrada DENTRO del repo ----------
@@ -125,10 +128,32 @@ const CAMPOS = ["id", "name", "brand", "cat", "img", "price", "sizes", "qty", "t
 const huella = (p) => JSON.stringify(CAMPOS.map((k) => p[k] ?? "").concat(!!p.oculto));
 function tomarFoto() { ORIGINAL = new Map(PRODUCTOS.map((p) => [p.id, huella(p)])); }
 
+async function ultimoCommit() {
+  try {
+    const r = await fetch(`https://api.github.com/repos/${REPO}/commits/${RAMA}`, {
+      cache: "no-store",
+      headers: Object.assign({ Accept: "application/vnd.github.sha" }, TOKEN ? { Authorization: "Bearer " + TOKEN } : {}),
+    });
+    const sha = r.ok ? (await r.text()).trim() : "";
+    return /^[0-9a-f]{40}$/.test(sha) ? sha : null;
+  } catch { return null; }
+}
+async function fijarVersion() {
+  const sha = await ultimoCommit();
+  RAW = `${RAW_REPO}/${sha || RAMA}`;
+}
+
+// Lee products.js de una versión del repo → lista con la marca oculto
+async function leerCatalogo(base) {
+  const r = await fetch(`${base}/assets/js/products.js`, { cache: "no-store" });
+  if (!r.ok) throw new Error(`catálogo ${r.status}`);
+  const datos = new Function((await r.text()) + "; return { v: PRODUCTS, o: typeof PRODUCTS_OCULTOS !== 'undefined' ? PRODUCTS_OCULTOS : [] };")();
+  return datos.v.map((p) => ({ ...p, oculto: false })).concat(datos.o.map((p) => ({ ...p, oculto: true })));
+}
+
 async function cargar() {
-  const code = await (await fetch(`${RAW}/assets/js/products.js?t=${Date.now()}`, { cache: "no-store" })).text();
-  const datos = new Function(code + "; return { v: PRODUCTS, o: typeof PRODUCTS_OCULTOS !== 'undefined' ? PRODUCTS_OCULTOS : [] };")();
-  PRODUCTOS = datos.v.map((p) => ({ ...p, oculto: false })).concat(datos.o.map((p) => ({ ...p, oculto: true })));
+  await fijarVersion();
+  PRODUCTOS = await leerCatalogo(RAW);
   tomarFoto();
   try {
     const cc = await (await fetch(`${RAW}/assets/js/categories.js?t=${Date.now()}`, { cache: "no-store" })).text();
@@ -635,6 +660,22 @@ function serializar(lista) {
     (ocu.length ? `\n// Ocultos: no aparecen en la tienda; se vuelven a mostrar desde /admin\nconst PRODUCTS_OCULTOS = [\n${ocu.map(fila).join(",\n")}\n];\n` : "");
 }
 
+// Aplica solo lo que se cambió en este panel sobre el catálogo publicado:
+// edita los productos tocados, quita los eliminados y agrega los nuevos al final
+function fusionar(publicado) {
+  const tocados = cambiados();
+  const fuera = new Set(eliminados);
+  const mios = new Map(PRODUCTOS.map((p) => [p.id, p]));
+  const lista = [], vistos = new Set();
+  for (const p of publicado) {
+    if (fuera.has(p.id)) continue;
+    vistos.add(p.id);
+    lista.push(tocados.has(p.id) && mios.has(p.id) ? mios.get(p.id) : p);
+  }
+  for (const p of PRODUCTOS) if (tocados.has(p.id) && !vistos.has(p.id)) lista.push(p);
+  return lista;
+}
+
 // Convierte las galerías editadas en archivos a subir y a borrar
 async function planFotos() {
   const subir = [], borrar = [], publicadas = {};
@@ -683,26 +724,32 @@ $("btnPublicar").addEventListener("click", async () => {
       const bc = await gh(`/repos/${REPO}/git/blobs`, { method: "POST", body: { content: cuerpo, encoding: "utf-8" } });
       arbol.push({ path: "assets/js/categories.js", mode: "100644", type: "blob", sha: bc.sha });
     }
-    const cat = await gh(`/repos/${REPO}/git/blobs`, { method: "POST", body: { content: serializar(PRODUCTOS), encoding: "utf-8" } });
-    arbol.push({ path: "assets/js/products.js", mode: "100644", type: "blob", sha: cat.sha });
-
     const msg = `Admin: ${cambiados().size + eliminados.length} producto(s) actualizados` +
       (subir.length ? ` · ${subir.length} foto(s) subidas` : "") + (borrar.length ? ` · ${borrar.length} foto(s) quitadas` : "");
-    // Si el robot publicó algo justo en medio, se vuelve a armar sobre lo último
+    // El catálogo se arma sobre lo que hay publicado AHORA (no sobre lo que se cargó al abrir):
+    // así un cambio hecho en otro celular o pestaña nunca se deshace.
+    let final;
     for (let intento = 1; ; intento++) {
       const ref = await gh(`/repos/${REPO}/git/ref/heads/${RAMA}`);
       const baseSha = ref.object.sha;
+      final = fusionar(await leerCatalogo(`${RAW_REPO}/${baseSha}`));
+      const cat = await gh(`/repos/${REPO}/git/blobs`, { method: "POST", body: { content: serializar(final), encoding: "utf-8" } });
       const baseCommit = await gh(`/repos/${REPO}/git/commits/${baseSha}`);
-      const tree = await gh(`/repos/${REPO}/git/trees`, { method: "POST", body: { base_tree: baseCommit.tree.sha, tree: arbol } });
+      const tree = await gh(`/repos/${REPO}/git/trees`, {
+        method: "POST",
+        body: { base_tree: baseCommit.tree.sha, tree: arbol.concat({ path: "assets/js/products.js", mode: "100644", type: "blob", sha: cat.sha }) },
+      });
       const commit = await gh(`/repos/${REPO}/git/commits`, { method: "POST", body: { message: msg, tree: tree.sha, parents: [baseSha] } });
       try {
         await gh(`/repos/${REPO}/git/refs/heads/${RAMA}`, { method: "PATCH", body: { sha: commit.sha } });
+        RAW = `${RAW_REPO}/${commit.sha}`;
         break;
       } catch (err) {
         if (err.status !== 422 || intento >= 3) throw err;
       }
     }
 
+    PRODUCTOS = final;
     Object.assign(CONOCIDAS, publicadas);
     for (const [id, lista] of Object.entries(publicadas)) GALERIA[id] = lista.length;
     PENDIENTES = {};
@@ -766,7 +813,8 @@ $("btnSalir").addEventListener("click", () => {
   $("btnPin").addEventListener("click", desbloquear);
   $("pinInput").addEventListener("keydown", (e) => { if (e.key === "Enter") desbloquear(); });
   try {
-    const r = await fetch(`${RAW}/admin/acceso.enc.json?t=${Date.now()}`, { cache: "no-store" });
+    await fijarVersion();
+    const r = await fetch(`${RAW}/admin/acceso.enc.json`, { cache: "no-store" });
     if (!r.ok) throw new Error(String(r.status));
     ACCESO = await r.json();
   } catch {

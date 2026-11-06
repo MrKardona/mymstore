@@ -225,7 +225,7 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
   <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" defer></script>${tiene3d ? `
   <script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>` : ""}
   <script src="../assets/js/categories.js?v=${VER}"></script>
-  <script src="../assets/js/products.js?v=${VER}"></script>
+  <script>document.write('<script src="../assets/js/products.js?t=' + Math.floor(Date.now() / 60000) + '"><\\/script>');</script>
   <script src="../assets/js/gallery.js?v=${VER}"></script>
   <script src="../assets/js/store.js?v=${VER}" defer></script>${esKit ? "" : `
   <script src="../assets/js/tallas.js?v=${VER}" defer></script>`}
@@ -292,7 +292,6 @@ let idx = fs.readFileSync(idxPath, "utf8");
 idx = idx
   .replace(/assets\/css\/style\.css\?v=[^"]+/, "assets/css/style.css?v=" + VER)
   .replace(/assets\/js\/categories\.js\?v=[^"]+/, "assets/js/categories.js?v=" + VER)
-  .replace(/assets\/js\/products\.js\?v=[^"]+/, "assets/js/products.js?v=" + VER)
   .replace(/assets\/js\/gallery\.js\?v=[^"]+/, "assets/js/gallery.js?v=" + VER)
   .replace(/assets\/js\/store\.js\?v=[^"]+/, "assets/js/store.js?v=" + VER)
   .replace(/assets\/js\/tallas\.js\?v=[^"]+/, "assets/js/tallas.js?v=" + VER);

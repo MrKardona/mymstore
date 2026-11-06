@@ -39,7 +39,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;800;900&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css?v=to3c3k">
+  <link rel="stylesheet" href="assets/css/style.css?v=to3cof">
   <link rel="preload" as="image" href="assets/img/thumbs/jellyfish-onix-aurora.webp">
 
   <!-- Datos estructurados: tienda local -->
@@ -392,10 +392,11 @@
 
   <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" defer></script>
   <script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
-  <script src="assets/js/categories.js?v=to3c3k"></script>
-  <script src="assets/js/products.js?v=to3c3k"></script>
-  <script src="assets/js/gallery.js?v=to3c3k"></script>
-  <script src="assets/js/store.js?v=to3c3k" defer></script>
-  <script src="assets/js/tallas.js?v=to3c3k" defer></script>
+  <script src="assets/js/categories.js?v=to3cof"></script>
+  <!-- El catálogo cambia desde /admin: se pide con marca de minuto para no esperar la caché de 10 min de la página -->
+  <script>document.write('<script src="assets/js/products.js?t=' + Math.floor(Date.now() / 60000) + '"><\/script>');</script>
+  <script src="assets/js/gallery.js?v=to3cof"></script>
+  <script src="assets/js/store.js?v=to3cof" defer></script>
+  <script src="assets/js/tallas.js?v=to3cof" defer></script>
 </body>
 </html>
