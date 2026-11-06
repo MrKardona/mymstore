@@ -39,7 +39,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;800;900&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css?v=tnynse">
+  <link rel="stylesheet" href="assets/css/style.css?v=to2a04">
   <link rel="preload" as="image" href="assets/img/thumbs/jellyfish-onix-aurora.webp">
 
   <!-- Datos estructurados: tienda local -->
@@ -93,7 +93,7 @@
       {
         "@type": "Question",
         "name": "¿Qué tallas manejan?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Cada par publicado indica su talla en US para hombre y mujer. Nuestro inventario es de unidades únicas y exclusivas, por eso si ves tu talla, asegúrala antes de que vuele." }
+        "acceptedAnswer": { "@type": "Answer", "text": "Cada par publicado indica su talla en US para hombre y mujer, con su equivalente en Europa, UK y centímetros según la tabla oficial de cada marca (Nike, Jordan, adidas, Yeezy y New Balance). Nuestro inventario es de unidades únicas y exclusivas, por eso si ves tu talla, asegúrala antes de que vuele." }
       }
     ]
   }
@@ -309,7 +309,8 @@
         </details>
         <details>
           <summary>¿Cómo sé cuál es mi talla?</summary>
-          <p class="faq__a">Cada producto indica su talla en US (hombre y mujer). Si tienes dudas, escríbenos por WhatsApp y te asesoramos con la conversión exacta para tu pie.</p>
+          <p class="faq__a">Cada producto indica su talla en US (hombre y mujer) con su equivalente en Europa, UK y centímetros. Abre la guía, elige la marca y la talla que usas normalmente y te mostramos la conversión. Si aún tienes dudas, escríbenos por WhatsApp y te asesoramos.</p>
+          <button type="button" class="btn btn--ghost faq__guia" data-guia-tallas>Abrir guía de tallas <span class="btn__arrow">→</span></button>
         </details>
         <details>
           <summary>¿Cómo pago mi pedido?</summary>
@@ -345,6 +346,7 @@
           <li><a href="#catalogo">Catálogo completo</a></li>
           <li><a href="#nosotros">Nosotros</a></li>
           <li><a href="#faq">Preguntas frecuentes</a></li>
+          <li><a href="#faq" data-guia-tallas>Guía de tallas</a></li>
         </ul>
       </div>
       <div>
@@ -390,9 +392,10 @@
 
   <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js" defer></script>
   <script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
-  <script src="assets/js/categories.js?v=tnynse"></script>
-  <script src="assets/js/products.js?v=tnynse"></script>
-  <script src="assets/js/gallery.js?v=tnynse"></script>
-  <script src="assets/js/store.js?v=tnynse" defer></script>
+  <script src="assets/js/categories.js?v=to2a04"></script>
+  <script src="assets/js/products.js?v=to2a04"></script>
+  <script src="assets/js/gallery.js?v=to2a04"></script>
+  <script src="assets/js/store.js?v=to2a04" defer></script>
+  <script src="assets/js/tallas.js?v=to2a04" defer></script>
 </body>
 </html>

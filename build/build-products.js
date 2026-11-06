@@ -160,7 +160,14 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
           ? `<p class="pdp__price pdp__price--consulta">Precio a consultar <small>Te respondemos al instante por WhatsApp</small></p>`
           : `<p class="pdp__price">${fmtCOP(p.price)} <small>COP · Precio final</small></p>`}
         <p class="pdp__stock${agotado ? " pdp__stock--out" : few ? " pdp__stock--few" : ""}"><span class="dot"></span> ${agotado ? "Agotado por ahora" : consulta ? "Tallas y disponibilidad por WhatsApp" : esKit ? "Disponible · entrega inmediata" : few ? "¡Última unidad disponible!" : `${p.qty} unidades disponibles`}</p>
-        <p class="pdp__desc">${esc(p.desc)}</p>
+        <p class="pdp__desc">${esc(p.desc)}</p>${esKit ? "" : `
+        <div class="pdp__talla" data-guia-resumen data-tallas="${esc(p.sizes)}" data-marca="${esc(p.brand)}" data-producto="${esc(p.name)}">
+          <div class="pdp__talla-head">
+            <span>Talla de este par</span>
+            <button type="button" class="pdp__guia" data-guia-tallas>Guía de tallas <span aria-hidden="true">→</span></button>
+          </div>
+          <ul class="pdp__equiv" data-equivalencias><li><strong>${esc(p.sizes)}</strong></li></ul>
+        </div>`}
         <div class="pdp__row">
           ${agotado || consulta ? "" : `<button class="btn btn--fire magnetic" onclick="addToCart('${p.id}')">Agregar al carrito</button>`}
           <a href="#" class="btn btn--wa magnetic" data-wa="${esc(msgWa)}">${agotado ? "Avísame cuando vuelva" : consulta ? "Consultar precio por WhatsApp" : "Comprar ya por WhatsApp"} <span class="btn__arrow">→</span></a>
@@ -220,7 +227,8 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
   <script src="../assets/js/categories.js?v=${VER}"></script>
   <script src="../assets/js/products.js?v=${VER}"></script>
   <script src="../assets/js/gallery.js?v=${VER}"></script>
-  <script src="../assets/js/store.js?v=${VER}" defer></script>
+  <script src="../assets/js/store.js?v=${VER}" defer></script>${esKit ? "" : `
+  <script src="../assets/js/tallas.js?v=${VER}" defer></script>`}
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var rel = PRODUCTS.filter(function (x) { return x.cat === "${p.cat}" && x.id !== "${p.id}"; }).slice(0, 4);
@@ -286,7 +294,8 @@ idx = idx
   .replace(/assets\/js\/categories\.js\?v=[^"]+/, "assets/js/categories.js?v=" + VER)
   .replace(/assets\/js\/products\.js\?v=[^"]+/, "assets/js/products.js?v=" + VER)
   .replace(/assets\/js\/gallery\.js\?v=[^"]+/, "assets/js/gallery.js?v=" + VER)
-  .replace(/assets\/js\/store\.js\?v=[^"]+/, "assets/js/store.js?v=" + VER);
+  .replace(/assets\/js\/store\.js\?v=[^"]+/, "assets/js/store.js?v=" + VER)
+  .replace(/assets\/js\/tallas\.js\?v=[^"]+/, "assets/js/tallas.js?v=" + VER);
 fs.writeFileSync(idxPath, idx);
 
 console.log("OK: " + PRODUCTS.length + " páginas + sitemap + gallery.js (v=" + VER + ")");
