@@ -51,7 +51,6 @@ const PRODUCTS = [
   { id: "jordan-4-beige", name: "Air Jordan 4 Retro Beige", brand: "Jordan", cat: "nike", img: "jordan-4-beige.webp", price: 750000, sizes: "6 · 6.5 US Women", qty: 2, tag: "Jordan", desc: "Air Jordan 4 Retro en beige con suela degradé naranja. Elegancia tonal." },
   { id: "jordan-4-j-balvin", name: "Air Jordan 4 x J Balvin", brand: "Jordan", cat: "nike", img: "jordan-4-j-balvin.webp", price: 970000, sizes: "8.5 · 9 US Men", qty: 2, tag: "Hype", desc: "Air Jordan 4 x J Balvin. La colab del paisa con detalles únicos que brillan." },
   { id: "jordan-sixty-plus-low", name: "Jordan Sixty Plus Low", brand: "Jordan", cat: "nike", img: "jordan-sixty-plus-low.webp", price: 500000, sizes: "10.5 US Men", qty: 1, tag: "Jordan", desc: "Jordan Sixty Plus Low en gris con rojo. Herencia de básquet, uso diario." },
-  { id: "jordan-strap-azul", name: "Jordan Low Strap Azul", brand: "Jordan", cat: "nike", img: "jordan-strap-azul.webp", price: 480000, sizes: "8.5 US Men", qty: 0, tag: "Jordan", desc: "Jordan low con correa en azul marino y crema. Ajuste firme, estilo distinto." },
   { id: "shox-tl-negro", name: "Nike Shox TL Negro", brand: "Nike", cat: "nike", img: "shox-tl-negro.webp", price: 470000, sizes: "8.5 US Men", qty: 1, tag: "Nike", desc: "Shox TL en negro con columnas rojas. Amortiguación mecánica, look agresivo." },
   { id: "air-max-95-crema", name: "Nike Air Max 95 Crema", brand: "Nike", cat: "nike", img: "air-max-95-crema.webp", price: 600000, sizes: "7.5 US Women", qty: 1, tag: "Nike", desc: "Air Max 95 Big Bubble en crema. Capas tonales y burbuja visible." },
   { id: "p-6000-plata", name: "Nike P-6000 Plata", brand: "Nike", cat: "nike", img: "p-6000-plata.webp", price: 430000, sizes: "5.5Y", qty: 1, tag: "Trend", desc: "P-6000 en plata metálica. El runner retro que domina las calles." },
@@ -117,4 +116,9 @@ const PRODUCTS = [
   { id: "jordan-spizike-low-negro-amarillo", name: "Jordan Spizike Low Negro, Amarillo y Rosa", brand: "Jordan", cat: "nike", img: "jordan-spizike-low-negro-amarillo.webp", price: 0, sizes: "A consultar", qty: 1, tag: "Jordan", desc: "Spizike Low en negro con estampado de elefante y toques amarillos, rojos y rosados." },
   { id: "jordan-spizike-low-oliva", name: "Jordan Spizike Low Oliva", brand: "Jordan", cat: "nike", img: "jordan-spizike-low-oliva.webp", price: 530000, sizes: "7.y", qty: 1, tag: "Jordan", desc: "Spizike Low en negro y oliva con gamuza café y suela crema." },
   { id: "jordan-3-retro-azul-marino-ps", name: "Air Jordan 3 Retro Azul Marino (PS)", brand: "Jordan", cat: "nike", img: "jordan-3-retro-azul-marino-ps.webp", price: 0, sizes: "A consultar", qty: 1, tag: "Jordan", desc: "Jordan 3 para niños en azul marino con detalles azules y rojos." }
+];
+
+// Ocultos: no aparecen en la tienda; se vuelven a mostrar desde /admin
+const PRODUCTS_OCULTOS = [
+  { id: "jordan-strap-azul", name: "Jordan Low Strap Azul", brand: "Jordan", cat: "nike", img: "jordan-strap-azul.webp", price: 480000, sizes: "8.5 US Men", qty: 0, tag: "Jordan", desc: "Jordan low con correa en azul marino y crema. Ajuste firme, estilo distinto." }
 ];
