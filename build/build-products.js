@@ -16,6 +16,9 @@ vm.runInContext(fs.readFileSync(path.join(ROOT, "assets/js/products.js"), "utf8"
 const PRODUCTS = ctx.PRODUCTS;
 
 const fmtCOP = (n) => "$" + n.toLocaleString("es-CO");
+// Promoción (assets/js/promo.js): la página trae ambos precios y el navegador muestra
+// el de la promo solo mientras esté vigente (clase promo-on en <html>)
+const { PROMO, precioPromo } = require(path.join(ROOT, "assets/js/promo.js"));
 const KIT_ID = "kit-limpieza-tenis";
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 
@@ -57,6 +60,10 @@ function productPage(p) {
   const msgWa = consulta
     ? `Hola M&M Store 👟 Quiero saber el precio y las tallas disponibles del ${p.name}.`
     : `Hola M&M Store 👟 Quiero el ${p.name} (${p.sizes}) por ${fmtCOP(p.price)}. ¿Está disponible?`;
+  const promo = PROMO.activa && !consulta;
+  const msgWaPromo = consulta
+    ? `${msgWa} Vi el ${PROMO.pct}% de ${PROMO.nombre}.`
+    : `Hola M&M Store 👟 Quiero el ${p.name} (${p.sizes}) por ${fmtCOP(precioPromo(p.price))} con el ${PROMO.pct}% de ${PROMO.nombre}. ¿Está disponible?`;
 
   const jsonld = {
     "@context": "https://schema.org",
@@ -113,6 +120,7 @@ function productPage(p) {
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;800;900&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/css/style.css?v=${VER}">
+  <script src="../assets/js/promo.js?v=${VER}"></script>
   <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
   <script type="application/ld+json">${JSON.stringify(crumbs)}</script>
 </head>
@@ -158,7 +166,7 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
         <h1>${esc(p.name)}</h1>
         ${consulta
           ? `<p class="pdp__price pdp__price--consulta">Precio a consultar <small>Te respondemos al instante por WhatsApp</small></p>`
-          : `<p class="pdp__price">${fmtCOP(p.price)} <small>COP · Precio final</small></p>`}
+          : `<p class="pdp__price"><span class="precio-normal">${fmtCOP(p.price)}</span>${promo ? `<span class="precio-con-promo"><s class="precio-antes">${fmtCOP(p.price)}</s> <span class="precio-promo">${fmtCOP(precioPromo(p.price))}</span> <span class="pdp__promo-tag">-${PROMO.pct}% ${esc(PROMO.nombre)}</span></span>` : ""} <small>COP · Precio final</small></p>`}
         <p class="pdp__stock${agotado ? " pdp__stock--out" : few ? " pdp__stock--few" : ""}"><span class="dot"></span> ${agotado ? "Agotado por ahora" : consulta ? "Tallas y disponibilidad por WhatsApp" : esKit ? "Disponible · entrega inmediata" : few ? "¡Última unidad disponible!" : `${p.qty} unidades disponibles`}</p>
         <p class="pdp__desc">${esc(p.desc)}</p>${esKit ? "" : `
         <div class="pdp__talla" data-guia-resumen data-tallas="${esc(p.sizes)}" data-marca="${esc(p.brand)}" data-producto="${esc(p.name)}">
@@ -170,7 +178,7 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
         </div>`}
         <div class="pdp__row">
           ${agotado || consulta ? "" : `<button class="btn btn--fire magnetic" onclick="addToCart('${p.id}')">Agregar al carrito</button>`}
-          <a href="#" class="btn btn--wa magnetic" data-wa="${esc(msgWa)}">${agotado ? "Avísame cuando vuelva" : consulta ? "Consultar precio por WhatsApp" : "Comprar ya por WhatsApp"} <span class="btn__arrow">→</span></a>
+          <a href="#" class="btn btn--wa magnetic" data-wa="${esc(msgWa)}"${PROMO.activa && !agotado ? ` data-wa-promo="${esc(msgWaPromo)}"` : ""}>${agotado ? "Avísame cuando vuelva" : consulta ? "Consultar precio por WhatsApp" : "Comprar ya por WhatsApp"} <span class="btn__arrow">→</span></a>
         </div>
         <dl class="pdp__meta">
           <div><dt>${esKit ? "Incluye" : "Talla"}</dt><dd>${esc(p.sizes)}</dd></div>
@@ -292,6 +300,7 @@ let idx = fs.readFileSync(idxPath, "utf8");
 idx = idx
   .replace(/assets\/css\/style\.css\?v=[^"]+/, "assets/css/style.css?v=" + VER)
   .replace(/assets\/js\/categories\.js\?v=[^"]+/, "assets/js/categories.js?v=" + VER)
+  .replace(/assets\/js\/promo\.js\?v=[^"]+/, "assets/js/promo.js?v=" + VER)
   .replace(/assets\/js\/gallery\.js\?v=[^"]+/, "assets/js/gallery.js?v=" + VER)
   .replace(/assets\/js\/store\.js\?v=[^"]+/, "assets/js/store.js?v=" + VER)
   .replace(/assets\/js\/tallas\.js\?v=[^"]+/, "assets/js/tallas.js?v=" + VER);

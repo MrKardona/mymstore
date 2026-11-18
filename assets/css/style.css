@@ -1063,3 +1063,56 @@ html.lenis, html.lenis body { height: auto; }
   .tg__medir svg { width: 72px; }
 }
 @media (prefers-reduced-motion: reduce) { .tg, .tg-abierta .tg { transition: none; } }
+
+/* ---------- Promoción (Black Friday) ---------- */
+/* Todo lo de la promo se muestra solo con <html class="promo-on"> (assets/js/promo.js) */
+.bf, .precio-con-promo { display: none; }
+.promo-on .precio-normal { display: none; }
+.promo-on .precio-con-promo { display: inline; }
+.precio-antes { color: var(--cream-dim); font-weight: 600; font-size: 0.78em; text-decoration-thickness: 1.5px; margin-right: 4px; }
+.precio-promo { color: var(--orange); }
+.card__price .precio-antes { display: block; font-size: 0.72rem; margin: 0 0 1px; }
+.card__promo {
+  position: absolute; top: 12px; right: 12px;
+  background: #0a0f17; color: var(--orange);
+  font-size: 0.72rem; font-weight: 900; letter-spacing: 0.04em;
+  padding: 5px 9px; border-radius: 999px; border: 1px solid var(--orange);
+}
+.pdp__promo-tag { display: inline-block; vertical-align: middle; margin-left: 6px; padding: 4px 10px; border-radius: 999px; background: var(--orange); color: var(--ink); font-size: 0.72rem; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
+.pdp__price .precio-antes { font-size: 1.05rem; }
+.kitbanner__precio .precio-antes { font-family: var(--font-body); font-size: 1.1rem; vertical-align: middle; }
+
+.promo-on .bf {
+  display: grid; position: relative; overflow: hidden; isolation: isolate;
+  margin: clamp(10px, 3vw, 28px) clamp(12px, 3vw, 36px) 0;
+  border-radius: 26px; border: 1px solid rgba(245, 130, 32, 0.35);
+  min-height: clamp(380px, 44vw, 560px); align-items: center;
+  background: #070c14;
+}
+.bf__fondo, .bf__fondo img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bf__fondo { z-index: -1; }
+.bf__fondo img { object-fit: cover; object-position: right center; }
+.bf__fondo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(7, 12, 20, 0.85) 0%, rgba(7, 12, 20, 0.45) 38%, transparent 62%); }
+.bf__texto { padding: clamp(26px, 5vw, 64px); max-width: 640px; }
+.bf__kicker { display: inline-flex; align-items: center; gap: 10px; font-size: 0.74rem; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--cream); }
+.bf__kicker .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--orange); animation: pulse-dot 1.6s infinite; box-shadow: 0 0 0 4px rgba(245, 130, 32, 0.18); }
+.bf h2 { font-family: var(--font-display); text-transform: uppercase; line-height: 0.9; font-size: clamp(3.4rem, 9vw, 7.4rem); margin: 14px 0 8px; letter-spacing: 0.01em; }
+.bf__black { color: var(--cream); }
+.bf__friday { color: transparent; -webkit-text-stroke: 2px var(--orange); }
+.bf__oferta { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.bf__oferta strong { font-family: var(--font-display); font-size: clamp(3.2rem, 7.5vw, 5.6rem); line-height: 1; color: var(--orange); }
+.bf__oferta span { font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; font-size: clamp(0.95rem, 1.8vw, 1.25rem); line-height: 1.15; }
+.bf__detalle { color: var(--cream-dim); line-height: 1.6; max-width: 46ch; margin-bottom: 22px; font-size: 0.95rem; }
+.bf__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+.bf__fecha { font-size: 0.85rem; font-weight: 800; color: var(--cream); }
+@media (max-width: 700px) {
+  /* Celular: texto arriba y la foto vertical debajo; su parte superior (cielo oscuro) se funde con el texto */
+  .promo-on .bf { display: flex; flex-direction: column; min-height: 0; }
+  .bf__texto { order: 1; position: relative; z-index: 1; padding: 26px 20px 0; }
+  .bf__fondo { order: 2; position: relative; inset: auto; height: auto; margin-top: -40%; z-index: 0; }
+  .bf__fondo img { position: static; height: auto; display: block; }
+  .bf__fondo::after { background: linear-gradient(180deg, #070c14 0%, rgba(7, 12, 20, 0) 32%); }
+  .bf__detalle { font-size: 0.88rem; }
+  .bf__cta .btn { width: 100%; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) { .bf__kicker .dot { animation: none; } }

@@ -17,9 +17,16 @@ const fmtCOP = (n) => "$" + n.toLocaleString("es-CO");
 // Precio 0 = "precio a consultar": no entra al carrito, se pregunta por WhatsApp
 const KIT_ID = "kit-limpieza-tenis";
 const aConsultar = (p) => !(p.price > 0);
-const precioTxt = (p) => (aConsultar(p) ? "Precio a consultar" : fmtCOP(p.price));
+const precioTxt = (p) => (aConsultar(p) ? "Precio a consultar" : fmtCOP(precioFinal(p)));
+// Promoción (assets/js/promo.js): descuento real sobre el precio publicado
+const conPromo = (p) => typeof promoVigente === "function" && promoVigente() && p.price > 0;
+const precioFinal = (p) => (conPromo(p) ? precioPromo(p.price) : p.price);
+const precioHTML = (p) => conPromo(p)
+  ? `<s class="precio-antes">${fmtCOP(p.price)}</s> <span class="precio-promo">${fmtCOP(precioFinal(p))}</span>`
+  : precioTxt(p);
 const etiquetaTalla = (p) => (p.cat === "cuidado" ? "Incluye" : "Talla");
-const msgConsulta = (p) => `Hola M&M Store 👟 Quiero saber el precio y las tallas disponibles del ${p.name}.`;
+const msgConsulta = (p) => `Hola M&M Store 👟 Quiero saber el precio y las tallas disponibles del ${p.name}.` +
+  (typeof promoVigente === "function" && promoVigente() ? ` Vi el ${PROMO.pct}% de ${PROMO.nombre}.` : "");
 function consultar(id) { const p = byId(id); if (p) window.open(waUrl(msgConsulta(p)), "_blank", "noopener"); }
 
 // Regalo de lanzamiento: cada kit del carrito suma un paño de microfibra gratis
@@ -67,7 +74,7 @@ function setQty(id, qty) {
 }
 
 function cartTotal() {
-  return cart.reduce((s, i) => { const p = byId(i.id); return s + (p ? p.price * i.qty : 0); }, 0);
+  return cart.reduce((s, i) => { const p = byId(i.id); return s + (p ? precioFinal(p) * i.qty : 0); }, 0);
 }
 
 function renderCart() {
@@ -91,7 +98,7 @@ function renderCart() {
         <img src="${BASE}assets/img/thumbs/${p.img.replace(".webp", "")}.webp" alt="${p.name}" loading="lazy">
         <div>
           <h4>${p.name}</h4>
-          <div class="ci__price">${fmtCOP(p.price)} · ${p.sizes}</div>
+          <div class="ci__price">${precioHTML(p)} · ${p.sizes}</div>
           <div class="ci__qty">
             <button aria-label="Quitar uno" onclick="setQty('${p.id}', ${i.qty - 1})">−</button>
             <span>${i.qty}</span>
@@ -121,7 +128,7 @@ function renderCart() {
         <div>
           <span class="ci__kicker">Cuídalos desde el día uno</span>
           <h4>${kit.name}</h4>
-          <div class="ci__price">${fmtCOP(kit.price)} <span class="ci__plus">+ paño de regalo</span></div>
+          <div class="ci__price">${precioHTML(kit)} <span class="ci__plus">+ paño de regalo</span></div>
         </div>
         <button class="ci__add" aria-label="Agregar ${kit.name}" onclick="addToCart('${KIT_ID}')">+ Agregar</button>
       </div>`;
@@ -135,11 +142,12 @@ function checkout() {
   if (!cart.length) { toast("Tu carrito está vacío"); return; }
   const lines = cart.map((i) => {
     const p = byId(i.id);
-    return `• ${p.name} (${p.sizes}) x${i.qty} — ${fmtCOP(p.price * i.qty)}`;
+    return `• ${p.name} (${p.sizes}) x${i.qty} — ${fmtCOP(precioFinal(p) * i.qty)}` + (conPromo(p) ? ` (antes ${fmtCOP(p.price * i.qty)})` : "");
   });
   const regalos = kitsEnCarrito();
   if (regalos) lines.push(`🎁 De regalo por el kit: ${REGALO.nombre} x${regalos} — GRATIS`);
-  const msg = `Hola ${STORE.name} 👟 Quiero este pedido:\n\n${lines.join("\n")}\n\nTotal: ${fmtCOP(cartTotal())}\n\n¿Está disponible para entrega?`;
+  const promo = cart.some((i) => byId(i.id) && conPromo(byId(i.id))) ? ` (con ${PROMO.pct}% de ${PROMO.nombre})` : "";
+  const msg = `Hola ${STORE.name} 👟 Quiero este pedido:\n\n${lines.join("\n")}\n\nTotal: ${fmtCOP(cartTotal())}${promo}\n\n¿Está disponible para entrega?`;
   window.open(waUrl(msg), "_blank", "noopener");
 }
 
@@ -200,14 +208,14 @@ function cardHTML(p) {
   <article class="card reveal${agotado ? " card--soldout" : ""}" data-cat="${p.cat}">
     <a class="card__media" href="${BASE}producto/${p.id}.html" aria-label="Ver ${p.name}"${typeof GALLERY !== "undefined" && GALLERY[p.id] > 1 ? ` data-alt="${BASE}assets/img/products/gallery/${p.id}-2.webp"` : ""}>
       <img src="${BASE}assets/img/products/${p.img}" alt="${p.name} — ${p.brand} original en M&M Store Medellín" loading="lazy" decoding="async" width="900" height="900">
-      ${tag}
+      ${tag}${conPromo(p) && !agotado ? `<span class="card__promo">-${PROMO.pct}%</span>` : ""}
     </a>
     <div class="card__body">
       <span class="card__brand">${p.brand}</span>
       <a href="${BASE}producto/${p.id}.html"><h3 class="card__name">${p.name}</h3></a>
       <span class="card__sizes">${etiquetaTalla(p)}: ${p.sizes}</span>
       <div class="card__footer">
-        <div class="card__price${consulta ? " card__price--consulta" : ""}">${precioTxt(p)}</div>
+        <div class="card__price${consulta ? " card__price--consulta" : ""}">${precioHTML(p)}</div>
         ${p.qty <= 0 ? "" : consulta
           ? `<button class="card__add card__add--wa" aria-label="Consultar precio de ${p.name} por WhatsApp" onclick="consultar('${p.id}')"><svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg></button>`
           : `<button class="card__add" aria-label="Agregar ${p.name} al carrito" onclick="addToCart('${p.id}')">+</button>`}
@@ -267,7 +275,7 @@ const kitBanner = document.getElementById("kit");
 if (kitBanner) {
   const kit = byId(KIT_ID);
   if (!kit || kit.qty <= 0) kitBanner.hidden = true;
-  else kitBanner.querySelector("[data-kit-precio]").textContent = precioTxt(kit);
+  else kitBanner.querySelector("[data-kit-precio]").innerHTML = precioHTML(kit);
 }
 
 /* ---------- Drops destacados ---------- */
@@ -284,7 +292,7 @@ if (dropsGrid && typeof PRODUCTS !== "undefined") {
       <div class="drop__body">
         <h3>${p.name}</h3>
         <p>${p.desc}</p>
-        <div class="drop__price">${precioTxt(p)}</div>
+        <div class="drop__price">${precioHTML(p)}</div>
         <a class="btn btn--fire" href="producto/${p.id}.html">Lo quiero <span class="btn__arrow">→</span></a>
       </div>
     </article>`;
