@@ -18,7 +18,9 @@ const PRODUCTS = ctx.PRODUCTS;
 const fmtCOP = (n) => "$" + n.toLocaleString("es-CO");
 // Promoción (assets/js/promo.js): la página trae ambos precios y el navegador muestra
 // el de la promo solo mientras esté vigente (clase promo-on en <html>)
-const { PROMO, precioPromo } = require(path.join(ROOT, "assets/js/promo.js"));
+const { PROMO, precioPromo, pctVigente } = require(path.join(ROOT, "assets/js/promo.js"));
+// % con el que salen escritas las páginas; el navegador lo corrige al % que rija en ese momento
+const PCT_BUILD = pctVigente() || PROMO.pct;
 const KIT_ID = "kit-limpieza-tenis";
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 
@@ -62,8 +64,8 @@ function productPage(p) {
     : `Hola M&M Store 👟 Quiero el ${p.name} (${p.sizes}) por ${fmtCOP(p.price)}. ¿Está disponible?`;
   const promo = PROMO.activa && !consulta;
   const msgWaPromo = consulta
-    ? `${msgWa} Vi el ${PROMO.pct}% de ${PROMO.nombre}.`
-    : `Hola M&M Store 👟 Quiero el ${p.name} (${p.sizes}) por ${fmtCOP(precioPromo(p.price))} con el ${PROMO.pct}% de ${PROMO.nombre}. ¿Está disponible?`;
+    ? `${msgWa} Vi el {pct}% de ${PROMO.nombre}.`
+    : `Hola M&M Store 👟 Quiero el ${p.name} (${p.sizes}) por {precio} con el {pct}% de ${PROMO.nombre}. ¿Está disponible?`;
 
   const jsonld = {
     "@context": "https://schema.org",
@@ -166,7 +168,7 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
         <h1>${esc(p.name)}</h1>
         ${consulta
           ? `<p class="pdp__price pdp__price--consulta">Precio a consultar <small>Te respondemos al instante por WhatsApp</small></p>`
-          : `<p class="pdp__price"><span class="precio-normal">${fmtCOP(p.price)}</span>${promo ? `<span class="precio-con-promo"><s class="precio-antes">${fmtCOP(p.price)}</s> <span class="precio-promo">${fmtCOP(precioPromo(p.price))}</span> <span class="pdp__promo-tag">-${PROMO.pct}% ${esc(PROMO.nombre)}</span></span>` : ""} <small>COP · Precio final</small></p>`}
+          : `<p class="pdp__price"><span class="precio-normal">${fmtCOP(p.price)}</span>${promo ? `<span class="precio-con-promo"><s class="precio-antes">${fmtCOP(p.price)}</s> <span class="precio-promo" data-precio-base="${p.price}">${fmtCOP(precioPromo(p.price, PCT_BUILD))}</span> <span class="pdp__promo-tag">-<span data-promo-pct>${PCT_BUILD}</span>% ${esc(PROMO.nombre)}</span></span>` : ""} <small>COP · Precio final</small></p>`}
         <p class="pdp__stock${agotado ? " pdp__stock--out" : few ? " pdp__stock--few" : ""}"><span class="dot"></span> ${agotado ? "Agotado por ahora" : consulta ? "Tallas y disponibilidad por WhatsApp" : esKit ? "Disponible · entrega inmediata" : few ? "¡Última unidad disponible!" : `${p.qty} unidades disponibles`}</p>
         <p class="pdp__desc">${esc(p.desc)}</p>${esKit ? "" : `
         <div class="pdp__talla" data-guia-resumen data-tallas="${esc(p.sizes)}" data-marca="${esc(p.brand)}" data-producto="${esc(p.name)}">
@@ -178,7 +180,7 @@ ${views.map((v, i) => `          <button class="pdp__thumb" type="button" data-s
         </div>`}
         <div class="pdp__row">
           ${agotado || consulta ? "" : `<button class="btn btn--fire magnetic" onclick="addToCart('${p.id}')">Agregar al carrito</button>`}
-          <a href="#" class="btn btn--wa magnetic" data-wa="${esc(msgWa)}"${PROMO.activa && !agotado ? ` data-wa-promo="${esc(msgWaPromo)}"` : ""}>${agotado ? "Avísame cuando vuelva" : consulta ? "Consultar precio por WhatsApp" : "Comprar ya por WhatsApp"} <span class="btn__arrow">→</span></a>
+          <a href="#" class="btn btn--wa magnetic" data-wa="${esc(msgWa)}"${PROMO.activa && !agotado ? ` data-wa-promo="${esc(msgWaPromo)}"${consulta ? "" : ` data-precio-wa="${p.price}"`}` : ""}>${agotado ? "Avísame cuando vuelva" : consulta ? "Consultar precio por WhatsApp" : "Comprar ya por WhatsApp"} <span class="btn__arrow">→</span></a>
         </div>
         <dl class="pdp__meta">
           <div><dt>${esKit ? "Incluye" : "Talla"}</dt><dd>${esc(p.sizes)}</dd></div>

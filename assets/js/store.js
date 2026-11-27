@@ -26,7 +26,7 @@ const precioHTML = (p) => conPromo(p)
   : precioTxt(p);
 const etiquetaTalla = (p) => (p.cat === "cuidado" ? "Incluye" : "Talla");
 const msgConsulta = (p) => `Hola M&M Store 👟 Quiero saber el precio y las tallas disponibles del ${p.name}.` +
-  (typeof promoVigente === "function" && promoVigente() ? ` Vi el ${PROMO.pct}% de ${PROMO.nombre}.` : "");
+  (typeof promoVigente === "function" && promoVigente() ? ` Vi el ${pctVigente()}% de ${PROMO.nombre}.` : "");
 function consultar(id) { const p = byId(id); if (p) window.open(waUrl(msgConsulta(p)), "_blank", "noopener"); }
 
 // Regalo de lanzamiento: cada kit del carrito suma un paño de microfibra gratis
@@ -146,7 +146,7 @@ function checkout() {
   });
   const regalos = kitsEnCarrito();
   if (regalos) lines.push(`🎁 De regalo por el kit: ${REGALO.nombre} x${regalos} — GRATIS`);
-  const promo = cart.some((i) => byId(i.id) && conPromo(byId(i.id))) ? ` (con ${PROMO.pct}% de ${PROMO.nombre})` : "";
+  const promo = cart.some((i) => byId(i.id) && conPromo(byId(i.id))) ? ` (con ${pctVigente()}% de ${PROMO.nombre})` : "";
   const msg = `Hola ${STORE.name} 👟 Quiero este pedido:\n\n${lines.join("\n")}\n\nTotal: ${fmtCOP(cartTotal())}${promo}\n\n¿Está disponible para entrega?`;
   window.open(waUrl(msg), "_blank", "noopener");
 }
@@ -208,7 +208,7 @@ function cardHTML(p) {
   <article class="card reveal${agotado ? " card--soldout" : ""}" data-cat="${p.cat}">
     <a class="card__media" href="${BASE}producto/${p.id}.html" aria-label="Ver ${p.name}"${typeof GALLERY !== "undefined" && GALLERY[p.id] > 1 ? ` data-alt="${BASE}assets/img/products/gallery/${p.id}-2.webp"` : ""}>
       <img src="${BASE}assets/img/products/${p.img}" alt="${p.name} — ${p.brand} original en M&M Store Medellín" loading="lazy" decoding="async" width="900" height="900">
-      ${tag}${conPromo(p) && !agotado ? `<span class="card__promo">-${PROMO.pct}%</span>` : ""}
+      ${tag}${conPromo(p) && !agotado ? `<span class="card__promo">-${pctVigente()}%</span>` : ""}
     </a>
     <div class="card__body">
       <span class="card__brand">${p.brand}</span>
