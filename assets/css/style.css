@@ -1101,10 +1101,10 @@ html.lenis, html.lenis body { height: auto; }
 .bf__friday { color: transparent; -webkit-text-stroke: 2px var(--orange); }
 .bf__oferta { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
 .bf__oferta strong { font-family: var(--font-display); font-size: clamp(3.2rem, 7.5vw, 5.6rem); line-height: 1; color: var(--orange); }
-.bf__oferta span { font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; font-size: clamp(0.95rem, 1.8vw, 1.25rem); line-height: 1.15; }
+.bf__oferta > span { font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; font-size: clamp(0.95rem, 1.8vw, 1.25rem); line-height: 1.15; }
 .bf__detalle { color: var(--cream-dim); line-height: 1.6; max-width: 46ch; margin-bottom: 22px; font-size: 0.95rem; }
 .bf__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
-.bf__fecha { font-size: 0.85rem; font-weight: 800; color: var(--cream); }
+.bf__fecha { flex-basis: 100%; line-height: 1.45; font-size: 0.85rem; font-weight: 800; color: var(--cream); }
 @media (max-width: 700px) {
   /* Celular: texto arriba y la foto vertical debajo; su parte superior (cielo oscuro) se funde con el texto */
   .promo-on .bf { display: flex; flex-direction: column; min-height: 0; }
